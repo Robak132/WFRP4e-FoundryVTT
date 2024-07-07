@@ -107,6 +107,20 @@ export default class TestWFRP {
       throw new Error(game.i18n.localize("ERROR.Speaker"))
 
     await this.rollDices();
+
+    let testModifier = this.data.result.testModifier;
+    if (testModifier > 60 || testModifier < -60) {
+      this.data.preData.testModifier = Math.max(Math.min(testModifier, 60), -60);
+      this.data.result.testModifier = Math.max(Math.min(testModifier, 60), -60);
+      if (!this.data.result.other.toString().includes("Ograniczono modyfikator do przedziału [-60, +60]")) {
+        this.data.result.other.push("Ograniczono modyfikator do przedziału [-60, +60]");
+      }
+    }
+
+    if (this.data.preData.skillName == `${game.i18n.localize("Leczenie")}`) {
+      this.data.preData.options.heal = true
+    }
+
     await this.computeResult();
 
     await this.runPostEffects();
@@ -150,10 +164,10 @@ export default class TestWFRP {
 
   /**
      * Provides the basic evaluation of a test.
-     * 
+     *
      * This function, when given the necessary data (target number, SL bonus, etc.) provides the
      * basic test evaluation - rolling the test (if not already given), determining SL, success, description, critical/fumble if needed.
-     * 
+     *
      * @param {Object} this.data  Test info: target number, SL bonus, success bonus, (opt) roll, etc
      */
   async computeResult() {
@@ -241,7 +255,7 @@ export default class TestWFRP {
           this.result.other.push(game.i18n.localize("ROLL.HitAnotherEngagedTarget"))
         }
       }
-  
+
     }
 
     // ********** Success **********
@@ -376,7 +390,7 @@ export default class TestWFRP {
       {
         this.result.hitloc.description = this.preData.hitLocationTable[this.preData.selectedHitLocation] + ` (${game.i18n.localize("ROLL.CalledShot")})`
       }
-      
+
     }
 
     let roll = this.result.roll
@@ -386,7 +400,7 @@ export default class TestWFRP {
         this.result.color_red = true;
         this.result.fumble = game.i18n.localize("Fumble");
       }
-      else if (roll <= target && roll % 11 == 0) {
+      else if (roll <= target && (roll % 11 === 0 || roll === 1)) {
         this.result.color_green = true;
         this.result.critical = game.i18n.localize("Critical");
       }
@@ -398,7 +412,7 @@ export default class TestWFRP {
         this.result.color_red = true;
         this.result.description = game.i18n.localize("ROLL.AstoundingFailure")
       }
-      else if (roll <= target && roll % 11 == 0) {
+      else if (roll <= target && (roll % 11 == 0 || roll == 1)) {
         this.result.color_green = true;
         this.result.description = game.i18n.localize("ROLL.AstoundingSuccess")
       }
@@ -413,7 +427,7 @@ export default class TestWFRP {
     if (this.result.critical && this.item.properties?.qualities.warpstone) {
       this.result.other.push(`@Corruption[minor]{Minor Exposure to Corruption}`)
     }
-    
+
     //@HOUSE
     if (game.settings.get("wfrp4e", "mooCriticalMitigation") && this.result.critical) {
       game.wfrp4e.utility.logHomebrew("mooCriticalMitigation")
@@ -458,6 +472,11 @@ export default class TestWFRP {
       }
     }
 
+    if (this.options.heal && this.result.outcome == "success") {
+      this.result.woundsHealed = Math.max(Math.trunc(this.result.SL) + this.options.intb, 0);
+      this.result.other.push(`${this.result.woundsHealed} ${game.i18n.localize("Wounds Healed")}`);
+    }
+
     if (this.options.rest) {
       this.result.woundsHealed = Math.max(Math.trunc(this.result.SL) + this.options.tb, 0);
       this.result.other.push(`${this.result.woundsHealed} ${game.i18n.localize("Wounds Healed")}`)
@@ -473,7 +492,7 @@ export default class TestWFRP {
 
     if (this.options.crewTest)
     {
-      
+
       let crewTestMessage = game.messages.get(this.options.crewTestMessage)
       let crewTestData = crewTestMessage.getFlag("wfrp4e", "crewTestData");
       let crewTest = CrewTest.fromData(crewTestData);
@@ -481,9 +500,9 @@ export default class TestWFRP {
     }
   }
 
-  async handleSoundContext(chatOptions) 
+  async handleSoundContext(chatOptions)
   {
-    
+
     try {
       let contextAudio = await WFRP_Audio.MatchContextAudio(WFRP_Audio.FindContext(this))
       chatOptions.sound = contextAudio.file || chatOptions.sound
@@ -495,7 +514,7 @@ export default class TestWFRP {
   /**
    * Handles opposed context - if actor has been targeted, roll defense. If this test has targets, roll attack
    * Test objects may have one or more opposed test message IDs. If these IDs exist, that means this test is
-   * either rerolled, edited, etc. and the opposed result needs to know of the new test (via updating message ID). 
+   * either rerolled, edited, etc. and the opposed result needs to know of the new test (via updating message ID).
    * The opposed test may also need to be recalculated if the defender test exists
    */
   async handleOpposed() {
@@ -514,7 +533,7 @@ export default class TestWFRP {
         opposeMessage = game.messages.get(this.actor.flags.oppose.opposeMessageId);
         this.context.opposedMessageIds.push(opposeMessage.id); // Maintain a link to the opposed message
       }
-      
+
       // Get oppose message, set this test's message as defender, compute result
       let oppose = opposeMessage.getOppose();
       await oppose.setDefender(this.message);
@@ -522,7 +541,7 @@ export default class TestWFRP {
       await this.actor.clearOpposed();
       await this.updateMessageFlags();
     }
-    else // if actor is attacking - rerolling old test. 
+    else // if actor is attacking - rerolling old test.
     {
       if (this.opposedMessages.length)
       {
@@ -667,9 +686,9 @@ export default class TestWFRP {
     await this.actor.update({ "system.status.corruption.value": newCorruption })
   }
 
-  async handleMutationResult() 
+  async handleMutationResult()
   {
-    if (this.failed) 
+    if (this.failed)
     {
       let wpb = this.actor.system.characteristics.wp.bonus;
       let tableText = game.i18n.localize("CHAT.MutateTable") + "<br>" + game.wfrp4e.config.corruptionTables.map(t => `@Table[${t}]<br>`).join("")
@@ -685,7 +704,7 @@ export default class TestWFRP {
       ChatMessage.create(WFRP_Utility.chatDataSetup(game.i18n.localize("CHAT.MutateSuccess"), "gmroll", false))
 
   }
-  
+
   async handleExtendedTest() {
     let item = fromUuidSync(this.options.extended);
     let deleteTest = false;
@@ -699,7 +718,7 @@ export default class TestWFRP {
         this.result.SL = this.result.roll <= this.result.target ? 1 : -1
       }
 
-      if (itemData.system.failingDecreases.value) 
+      if (itemData.system.failingDecreases.value)
       {
         itemData.system.SL.current += SL
         if (!itemData.system.negativePossible.value && itemData.system.SL.current < 0)
@@ -730,7 +749,7 @@ export default class TestWFRP {
         {
           itemData.system.SL.current = 0;
         }
-        else if (itemData.system.completion.value == "remove") 
+        else if (itemData.system.completion.value == "remove")
         {
           deleteTest = true;
         }
@@ -743,8 +762,8 @@ export default class TestWFRP {
       {
         await item.delete();
       }
-      else 
-      { 
+      else
+      {
         await item.update(itemData)
       }
     }
@@ -810,6 +829,14 @@ export default class TestWFRP {
 
     }
 
+    if (this.spell != null && this.result.overcast !== undefined) {
+      chatData["overCastCostDamage"] = this.result.overcast.usage.damage === undefined ? 0 : game.wfrp4e.config.overCastTable["damage"][this.result.overcast.usage.damage.count].cost;
+      chatData["overCastCostAoE"] = this.result.overcast.usage.AoE === undefined ? 0 : game.wfrp4e.config.overCastTable["AoE"][this.result.overcast.usage.AoE.count].cost;
+      chatData["overCastCostDuration"] = this.result.overcast.usage.duration === undefined ? 0 : game.wfrp4e.config.overCastTable["duration"][this.result.overcast.usage.duration.count].cost;
+      chatData["overCastCostRange"] = this.result.overcast.usage.range === undefined ? 0 : game.wfrp4e.config.overCastTable["range"][this.result.overcast.usage.range.count].cost;
+      chatData["overCastCostTarget"] = this.result.overcast.usage.target === undefined ? 0 : game.wfrp4e.config.overCastTable["target"][this.result.overcast.usage.target.count].cost;
+    }
+
 
     if (this.context.targets.length) {
       chatData.title += ` - ${game.i18n.localize("Opposed")}`;
@@ -841,7 +868,7 @@ export default class TestWFRP {
       this.context.messageId = message.id
       await this.updateMessageFlags()
     }
-    else // Update message 
+    else // Update message
     {
       // Emit the HTML as a chat message
       chatOptions["content"] = html;
@@ -867,7 +894,7 @@ export default class TestWFRP {
   async updateMessageFlags(updateData = {}) {
     let data = foundry.utils.mergeObject(this.data, updateData, { overwrite: true })
     let update = { "flags.testData": data }
-    
+
     if (this.message && game.user.isGM)
       await this.message.update(update)
 
@@ -891,8 +918,8 @@ export default class TestWFRP {
 
   /**
    * Add support for the Dice So Nice module
-   * @param {Object} roll 
-   * @param {String} rollMode 
+   * @param {Object} roll
+   * @param {String} rollMode
    */
   async _showDiceSoNice(roll, rollMode, speaker) {
     if (game.modules.get("dice-so-nice") && game.modules.get("dice-so-nice").active) {
@@ -970,7 +997,7 @@ export default class TestWFRP {
 
     overcastData.available = overcastData.total - sum;
 
-    //@HOUSE 
+    //@HOUSE
     if (game.settings.get("wfrp4e", "mooOvercasting") && this.spell) {
       game.wfrp4e.utility.logHomebrew("mooOvercasting")
 
@@ -979,7 +1006,7 @@ export default class TestWFRP {
       await this.calculateDamage()
     }
     //@/HOUSE
-    
+
     await this.updateMessageFlags();
     await this.renderRollCard()
   }
@@ -992,7 +1019,7 @@ export default class TestWFRP {
         overcastData.usage[overcastType].current = overcastData.usage[overcastType].initial
       }
     }
-    //@HOUSE 
+    //@HOUSE
     if (game.settings.get("wfrp4e", "mooOvercasting")) {
       game.wfrp4e.utility.logHomebrew("mooOvercasting")
       let multiplier = (game.settings.get("wfrp4e-eis", "dharRules") && game.wfrp4e.config.magicWind[this.spell.lore.value] == "Dhar") ? 1 : 2
@@ -1009,7 +1036,7 @@ export default class TestWFRP {
 
     if(this.preData.unofficialGrimoire) {
       game.wfrp4e.utility.logHomebrew("unofficialgrimoire");
-      let controlIngredient = this.preData.unofficialGrimoire.ingredientMode == 'control'; 
+      let controlIngredient = this.preData.unofficialGrimoire.ingredientMode == 'control';
       if (miscastCounter == 1) {
           if (this.hasIngredient && controlIngredient)
             this.result.nullminormis = game.i18n.localize("ROLL.MinorMis")
@@ -1056,7 +1083,7 @@ export default class TestWFRP {
       }
       else if (!game.settings.get("wfrp4e", "mooCatastrophicMiscasts") && miscastCounter >= 3)
         this.result.majormis = game.i18n.localize("ROLL.MajorMis")
-  
+
       //@HOUSE
       else if (game.settings.get("wfrp4e", "mooCatastrophicMiscasts") && miscastCounter >= 3) {
         game.wfrp4e.utility.logHomebrew("mooCatastrophicMiscasts")
@@ -1098,7 +1125,7 @@ export default class TestWFRP {
       if (breakdown.slBonus || (breakdown.successBonus && this.succeeded))
       {
         let SLstring = `<p><strong>${game.i18n.localize("SL")}</strong>: ${this.result.baseSL} (Base)`
-        
+
         if (breakdown.slBonus)
         {
           if (breakdown.slBonus > 0)
@@ -1111,7 +1138,7 @@ export default class TestWFRP {
           }
           SLstring += ` (${game.i18n.localize("DIALOG.SLBonus")})`;
         }
-        
+
         if (breakdown.successBonus && this.succeeded)
         {
           if (breakdown.successBonus > 0)
@@ -1172,21 +1199,21 @@ export default class TestWFRP {
   }
 
 
-  get damageEffects() 
+  get damageEffects()
   {
       return this.item.damageEffects;
   }
 
-  get targetEffects() 
+  get targetEffects()
   {
       return this.item.targetEffects;
   }
 
-  get areaEffects() 
+  get areaEffects()
   {
       return this.item.areaEffects;
   }
-  
+
 
   get targetModifiers() {
     return this.preData.testModifier + this.preData.testDifficulty + (this.preData.postOpposedModifiers.target || 0)
@@ -1204,6 +1231,14 @@ export default class TestWFRP {
     return this.result.critical
   }
 
+  get isGreen() {
+    return this.result.color_green
+  }
+
+  get isRed() {
+    return this.result.color_red
+  }
+
   get isFumble() {
     return this.result.fumble
   }
@@ -1211,7 +1246,7 @@ export default class TestWFRP {
   get useMount() {
     return this.item.attackType == "melee" && this.actor.isMounted && this.actor.mount && this.result.charging
   }
-  
+
   get target() { return this.data.result.target }
   get successBonus() { return this.data.preData.successBonus }
   get slBonus() { return this.data.preData.slBonus }

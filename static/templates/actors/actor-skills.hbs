@@ -19,6 +19,7 @@
     {{#if (isGM)}}
     <li class="item test-item" data-id="{{item.id}}">
       <div class="test-name">
+        <div class="image" style="background-image: url({{item.img}})"></div>
         <a class="name test-select">{{item.name}}</a>
       </div>
       <div class="test-progress">
@@ -39,6 +40,7 @@
     {{#unless item.hide.test}}
     <li class="item test-item" data-id="{{item.id}}">
       <div class="test-name">
+        <div class="image" style="background-image: url({{item.img}})"></div>
         <a class="name test-select">{{item.name}}</a>
       </div>
       {{#unless item.hide.progress}}
@@ -92,6 +94,7 @@
         {{#each items.skills.basic as |item i|}}
         <li class="item" data-id="{{item.id}}">
           <div class="skill-name">
+            <div class="image" style="background-image: url({{item.img}})"></div>
             <a class="name skill-select">{{item.name}}</a>
             {{#if item.advances.complete}}
             <a class="advancement-indicator" title="{{item.cost}} Exp" data-target="skill">&#10003;</a>
@@ -144,6 +147,7 @@
           {{#each items.skills.advanced as |item i|}}
           <li class="item skill-item" data-id="{{item.id}}">
             <div class="skill-name">
+              <div class="image" style="background-image: url({{item.img}})"></div>
               <a class="name skill-select">{{item.name}}</a>
               {{#if item.advances.complete}}
               <a class="advancement-indicator" title="{{item.cost}} Exp" data-target="skill">&#10003;</a>

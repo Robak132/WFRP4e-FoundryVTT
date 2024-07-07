@@ -174,11 +174,11 @@ export default class WomCastTest extends CastTest {
       }
 
       // Subtract SL by the amount spent on overcasts
-      // Math.max is for preventing negative SL, this occurs with Dhar overcast rules from, which don't really work well with WoM overcast
-      this.data.result.SL = `+${Math.max(0, overcastData.originalSL - (overcastData.total - overcastData.available))}`
-      await this.calculateDamage()
+      let overcastSpend = game.wfrp4e.config.magicWind[this.spell.lore.value] !== "Dhar" ? overcastData.total - overcastData.available : Math.floor((overcastData.total - overcastData.available) / 2)
+      this.data.result.SL = `+${overcastData.originalSL - overcastSpend}`;
+      await this.calculateDamage();
       await this.updateMessageFlags();
-      this.renderRollCard()
+      this.renderRollCard();
     }
   }
 

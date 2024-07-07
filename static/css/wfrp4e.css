@@ -2347,7 +2347,7 @@
 
       .app.window-app.wfrp4e.actor.vehicle-sheet .inventory-list .crew-test {
         line-height: 16px;
-        margin-top: 3px;    
+        margin-top: 3px;
       }
 
       .app.window-app.wfrp4e.actor.vehicle-sheet .mod-type,
@@ -4470,7 +4470,7 @@
       /* background: var(--debug-background-color-green); */
     }
 
-    .app.window-app.sheet.wfrp4e.actor .morale-log 
+    .app.window-app.sheet.wfrp4e.actor .morale-log
     {
       height: unset;
     }
@@ -4519,7 +4519,7 @@
       margin: 0px 5px 0px 5px;
     }
 
-    .app.window-app.sheet.wfrp4e.actor.vehicle-sheet .main .morale-log .inventory-list .content, 
+    .app.window-app.sheet.wfrp4e.actor.vehicle-sheet .main .morale-log .inventory-list .content,
       .app.window-app.sheet.wfrp4e.actor.vehicle-sheet .main .morale-log .inventory-header{
       padding: 0px 12px 0px 6px;
     }
@@ -4921,6 +4921,21 @@
       color: var(--actor-input-color);
       min-height: 24px;
     }
+.app.window-app.sheet.wfrp4e.actor .tab.skills.active .skill-section .inventory-list .item .skill-name .image {
+    background-size: 20px;
+    background-repeat: no-repeat;
+    min-height: 20px;
+    max-height: 20px;
+    min-width: 20px;
+    max-width: 20px;
+}
+
+.skill-image {
+    max-width: 64px;
+    max-height: 64px;
+    border: none;
+    object-fit: contain;
+}
      .inventory-list .test-name,
     .app.window-app.sheet.wfrp4e.actor .tab.skills.active .skill-section .inventory-list .item .skill-name {
         display: flex;
@@ -12772,7 +12787,7 @@ border-image-outset: 0px !important;
     .active-effect-sheet .script > *{
       flex: 1;
     }
-    
+
     .active-effect-sheet .script .script-delete,
       .active-effect-sheet .script .script-edit{
       flex: 0 0 20px;
@@ -14922,7 +14937,7 @@ input.card-edit {
   padding-right: 8px;
 }
 
-.message-content .opposed-options > a 
+.message-content .opposed-options > a
 {
   flex : 0 0 12px;
   margin: 4px;
@@ -14965,7 +14980,7 @@ textarea,
 }
 
 .script-config div:has( > .ace-editor) {
-  height: calc(100% - 40px);  
+  height: calc(100% - 40px);
   display: flex;
   flex-direction: column;
 }
@@ -17962,7 +17977,7 @@ li.message.flexcol.whisper:has(div > p.requestmessage) {
   flex-direction: column;
 }
 
-.vehicle-crew .role-section 
+.vehicle-crew .role-section
 {
   text-align: center;
 }
@@ -17988,7 +18003,7 @@ li.message.flexcol.whisper:has(div > p.requestmessage) {
 }
 
 
-.vehicle-crew .passenger-section 
+.vehicle-crew .passenger-section
 {
   flex: 1;
 }
@@ -18005,7 +18020,7 @@ li.message.flexcol.whisper:has(div > p.requestmessage) {
   flex: 1 0 80px;
   margin: 5px 10px;
 }
-.vehicle-crew .passenger-section .passenger-list .passenger .passenger-header 
+.vehicle-crew .passenger-section .passenger-list .passenger .passenger-header
 {
   display: flex;
   flex-direction: column;
@@ -18013,7 +18028,7 @@ li.message.flexcol.whisper:has(div > p.requestmessage) {
   text-align: center;
 }
 
-.vehicle-crew .passenger-section .passenger-list .passenger .passenger-header img 
+.vehicle-crew .passenger-section .passenger-list .passenger .passenger-header img
 {
   object-fit: contain;
 }

@@ -8,15 +8,36 @@
             {{/if}}
         </div>
         <div class="card-content test-data" data-actor-id="{{actorId}}" data-loc = "{{test.result.hitloc.roll}}" data-SL = "{{test.result.SL}}" data-roll = "{{test.result.roll}}" data-target = "{{test.result.target}}">
-            <b>{{title}}</b>
+            <h3><b>{{title}}</b></h3>
+        {{#if test.skill}}
+        <div class="card-content hide-option display-toggle" >
+            <img class="skill-image" src="{{test.skill.img}}"/>
         </div>
-    
+        {{/if}}
+        {{#if test.weapon}}
+        <div class="card-content hide-option display-toggle" >
+            <img class="skill-image" src="{{test.weapon.img}}"/>
+        </div>
+        {{/if}}
+        {{#if test.spell}}
+        <div class="card-content hide-option display-toggle" >
+            <img class="skill-image" src="{{test.spell.img}}"/>
+            <div class="card-content">{{{test.spell.description.value}}}</div>
+        </div>
+        {{/if}}
+        {{#if test.prayer}}
+        <div class="card-content hide-option display-toggle" >
+            <img src="{{test.prayer.img}}"/>
+            <div class="card-content">{{{test.prayer.description.value}}}</div>
+        </div>
+        {{/if}}
+        </div>
         <div class="card-content hide-option display-toggle" >
             <b>{{localize "Roll"}}</b>: 
-            {{#if test.isCritical}}
+            {{#if test.isGreen}}
             <span class="critical-roll display-toggle">
             {{/if}}
-            {{#if test.isFumble}}
+            {{#if test.isRed}}
             <span class="fumble-roll display-toggle">
             {{/if}}
             {{test.result.roll}}</span>

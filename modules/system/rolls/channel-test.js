@@ -101,7 +101,7 @@ export default class ChannelTest extends TestWFRP {
       this.result.description = game.i18n.localize("ROLL.ChannelSuccess")
 
       // Critical Channel - miscast and set SL gained to CN
-      if (this.result.roll % 11 == 0) {
+      if (this.result.roll % 11 == 0 || this.result.roll == 1) {
         this.result.color_green = true;
         this.result.criticalchannell = game.i18n.localize("ROLL.CritChannel")
         this.result.tooltips.miscast.push(game.i18n.localize("CHAT.CritChannelMiscast"))

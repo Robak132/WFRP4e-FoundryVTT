@@ -77,7 +77,7 @@ export default function() {
           break;
 
         case "d10InitAgi":
-          formula = "1d10 + @characteristics.i.bonus + @characteristics.ag.bonus"
+          formula = "1d10 + @characteristics.i.bonus + @characteristics.ag.bonus + @characteristics.i.value/100 + @characteristics.ag.value/10000";
           break;
       }
 

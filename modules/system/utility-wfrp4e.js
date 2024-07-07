@@ -320,12 +320,17 @@ export default class WFRP_Utility {
     if (!searchResult)
     {
       // Search compendium packs for base name item
+      let searchResults = []
       for (let pack of game.wfrp4e.tags.getPacksWithTag(type)) {
         const index = pack.indexed ? pack.index : await pack.getIndex();
-        let indexResult = index.find(t => this.extractBaseName(t.name) == this.extractBaseName(name) && (type.length == 0 || type.includes(t.type))) // if type is specified, check, otherwise it doesn't matter
-        if (indexResult)
-          searchResult = await pack.getDocument(indexResult._id)
+        let indexResults = index.filter(t => this.extractBaseName(t.name) == this.extractBaseName(name) && (type.length == 0 || type.includes(t.type))); // if type is specified, check, otherwise it doesn't matter
+        for (let indexResult of indexResults) {
+          searchResults.push(await pack.getDocument(indexResult._id))
+        }
       }
+      searchResults.sort((a,b) => a.name.localeCompare(b.name))
+      if (!!searchResults.length)
+        searchResult = searchResults[0]
     }
 
     if (searchResult) {
@@ -831,6 +836,7 @@ export default class WFRP_Utility {
     for (let pack of packs) {
       let items
       await pack.getDocuments().then(content => items = content.filter(i => i.type == "skill"));
+      items.sort((a, b) => (a.name.localeCompare(b.name)));
       for (let i of items) {
         if (i.system.advanced.value == "bsc") {
           if (i.system.grouped.value != "noSpec") {

@@ -136,7 +136,7 @@ export default class CastTest extends TestWFRP {
       }
       //@/HOUSE
       // Critical Casting - succeeds only if the user chooses Total Power option (which is assumed)
-      if (this.result.roll % 11 == 0) {
+      if (this.result.roll % 11 == 0 || this.result.roll == 1) {
         this.result.color_green = true;
         this.result.castOutcome = "success"
         this.result.description = game.i18n.localize("ROLL.CastingSuccess")
@@ -158,7 +158,7 @@ export default class CastTest extends TestWFRP {
       }
       //@/HOUSE
 
-      if (this.result.roll % 11 == 0) {
+      if (this.result.roll % 11 == 0 || this.result.roll == 1) {
         this.result.critical = game.i18n.localize("ROLL.CritCast")
         this.result.color_green = true;
         this.result.tooltips.miscast.push(game.i18n.localize("CHAT.CritCastMiscast"))

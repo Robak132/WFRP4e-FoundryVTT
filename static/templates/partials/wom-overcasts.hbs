@@ -6,7 +6,7 @@
     {{#if test.result.overcast.usage.damage}}
     <div class="overcast-section">
         <a class='overcast-button' {{#unless test.result.overcast.usage.damage.available}}style = "opacity: 0.5"{{/unless}} data-overcast="damage">{{test.result.overcast.usage.damage.label}}</a>
-        <a class="overcast-value damage">{{test.result.overcast.usage.damage.current}}</a>
+        <a class="overcast-value damage">{{test.result.overcast.usage.damage.current}} [{{overCastCostDamage}}]</a>
     </div>
     {{/if}}
 
@@ -16,7 +16,7 @@
         {{#if test.result.overcast.usage.target.AoE}}
         <a class="overcast-value aoe-template target" data-type="diameter" data-id="{{test.preData.item}}" data-actor-id="{{test.actor.id}}" ><i class="fas fa-ruler-combined"></i> {{test.result.overcast.usage.target.current}} {{test.result.overcast.usage.target.unit}}</a>
         {{else}}
-        <a class="overcast-value target">{{test.result.overcast.usage.target.current}} </a>
+        <a class="overcast-value target">{{test.result.overcast.usage.target.current}} {{test.result.overcast.usage.target.unit}} [{{overCastCostTarget}}]</a>
         {{/if}}
     </div>
     {{/if}}
@@ -24,14 +24,14 @@
     {{#if test.result.overcast.usage.duration}}
     <div class="overcast-section">
         <a class='overcast-button' {{#unless test.result.overcast.usage.duration.available}}style = "opacity: 0.5"{{/unless}} data-overcast="duration">{{test.result.overcast.usage.duration.label}}</a>
-        <a class="overcast-value duration">{{test.result.overcast.usage.duration.current}} {{test.result.overcast.usage.duration.unit}}</a>
+        <a class="overcast-value duration">{{test.result.overcast.usage.duration.current}} {{test.result.overcast.usage.duration.unit}} [{{overCastCostDuration}}]</a>
     </div>
     {{/if}}
     
     {{#if test.result.overcast.usage.range}}
     <div class="overcast-section">
         <a class='overcast-button' {{#unless test.result.overcast.usage.range.available}}style = "opacity: 0.5"{{/unless}} data-overcast="range">{{test.result.overcast.usage.range.label}}</a>
-        <a class="overcast-value range">{{test.result.overcast.usage.range.current}} {{test.result.overcast.usage.range.unit}}</a>
+        <a class="overcast-value range">{{test.result.overcast.usage.range.current}} {{test.result.overcast.usage.range.unit}} [{{overCastCostRange}}]</a>
     </div>
     {{/if}}
 
