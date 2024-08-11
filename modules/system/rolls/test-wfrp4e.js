@@ -830,11 +830,11 @@ export default class TestWFRP {
     }
 
     if (this.spell != null && this.result.overcast !== undefined) {
-      chatData["overCastCostDamage"] = this.result.overcast.usage.damage === undefined ? 0 : game.wfrp4e.config.overCastTable["damage"][this.result.overcast.usage.damage.count].cost;
-      chatData["overCastCostAoE"] = this.result.overcast.usage.AoE === undefined ? 0 : game.wfrp4e.config.overCastTable["AoE"][this.result.overcast.usage.AoE.count].cost;
-      chatData["overCastCostDuration"] = this.result.overcast.usage.duration === undefined ? 0 : game.wfrp4e.config.overCastTable["duration"][this.result.overcast.usage.duration.count].cost;
-      chatData["overCastCostRange"] = this.result.overcast.usage.range === undefined ? 0 : game.wfrp4e.config.overCastTable["range"][this.result.overcast.usage.range.count].cost;
-      chatData["overCastCostTarget"] = this.result.overcast.usage.target === undefined ? 0 : game.wfrp4e.config.overCastTable["target"][this.result.overcast.usage.target.count].cost;
+      chatData[`nextOvercast-damage`] = (game.wfrp4e.config.overCastTable['damage'][this.result.overcast.usage['damage']?.count ?? 0])?.cost;
+      chatData[`nextOvercast-AoE`] = (game.wfrp4e.config.overCastTable['AoE'][this.result.overcast.usage['target']?.count ?? 0])?.cost;
+      chatData[`nextOvercast-target`] = (game.wfrp4e.config.overCastTable['target'][this.result.overcast.usage['target']?.count ?? 0])?.cost;
+      chatData[`nextOvercast-duration`] = (game.wfrp4e.config.overCastTable['duration'][this.result.overcast.usage['duration']?.count ?? 0])?.cost;
+      chatData[`nextOvercast-range`] = (game.wfrp4e.config.overCastTable['range'][this.result.overcast.usage['range']?.count ?? 0])?.cost;
     }
 
 
