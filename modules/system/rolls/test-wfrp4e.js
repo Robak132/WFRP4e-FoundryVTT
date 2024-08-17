@@ -1,12 +1,13 @@
-import WFRP_Utility from "../utility-wfrp4e.js";
-import OpposedWFRP from "../opposed-wfrp4e.js";
-import WFRP_Audio from "../audio-wfrp4e.js";
-import CrewTest from "../crew-test.js"
+import WFRP_Utility from '../utility-wfrp4e.js';
+import OpposedWFRP from '../opposed-wfrp4e.js';
+import WFRP_Audio from '../audio-wfrp4e.js';
+import CrewTest from '../crew-test.js';
 
 export default class TestWFRP {
   constructor(data, actor) {
     if (!data)
       data = {}
+
     this.data = {
       preData: {
         title: data.title,
@@ -51,6 +52,19 @@ export default class TestWFRP {
         fortuneUsedReroll: data.fortuneUsedReroll,
         fortuneUsedAddSL: data.fortuneUsedAddSL,
       }
+    }
+
+    if (this.data.preData.testDifficulty + this.data.preData.testModifier > 60) {
+      let newModifier = Math.min(this.data.preData.testModifier, 60 - this.data.preData.testDifficulty)
+      this.data.preData.testModifier = newModifier
+      this.data.preData.other = ["Ograniczono modyfikator do przedziału [-60, +60]"];
+      this.data.context.breakdown.modifier = newModifier
+    }
+    if (this.data.preData.testDifficulty + this.data.preData.testModifier < 60) {
+      let newModifier = Math.max(this.data.preData.testModifier, -60 - this.data.preData.testDifficulty)
+      this.data.preData.testModifier = newModifier
+      this.data.preData.other = ["Ograniczono modyfikator do przedziału [-60, +60]"];
+      this.data.context.breakdown.modifier = newModifier
     }
 
     if (this.context.speaker && this.actor.isOpposing && this.context.targets.length)
@@ -100,6 +114,7 @@ export default class TestWFRP {
   async roll() {
     await this.runPreEffects();
 
+
     this.reset();
     if (!this.preData.item)
       throw new Error(game.i18n.localize("ERROR.Property"))
@@ -107,15 +122,6 @@ export default class TestWFRP {
       throw new Error(game.i18n.localize("ERROR.Speaker"))
 
     await this.rollDices();
-
-    let testModifier = this.data.result.testModifier;
-    if (testModifier > 60 || testModifier < -60) {
-      this.data.preData.testModifier = Math.max(Math.min(testModifier, 60), -60);
-      this.data.result.testModifier = Math.max(Math.min(testModifier, 60), -60);
-      if (!this.data.result.other.toString().includes("Ograniczono modyfikator do przedziału [-60, +60]")) {
-        this.data.result.other.push("Ograniczono modyfikator do przedziału [-60, +60]");
-      }
-    }
 
     if (this.data.preData.skillName == `${game.i18n.localize("Leczenie")}`) {
       this.data.preData.options.heal = true

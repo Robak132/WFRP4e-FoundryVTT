@@ -289,12 +289,12 @@ export class WeaponModel extends PropertiesMixin(PhysicalItemModel) {
         let rangeBands = {}
 
         rangeBands[`${game.i18n.localize("Point Blank")}`] = {
-            range: [0, Math.ceil(range / 10)],
+            range: [0, Math.ceil(Math.min(range / 10, 4))],
             modifier: game.wfrp4e.config.difficultyModifiers[game.wfrp4e.config.rangeModifiers["Point Blank"]],
             difficulty: game.wfrp4e.config.rangeModifiers["Point Blank"]
         }
         rangeBands[`${game.i18n.localize("Short Range")}`] = {
-            range: [Math.ceil(range / 10) + 1, Math.ceil(range / 2)],
+            range: [Math.ceil(Math.min(range / 10, 4)) + 1, Math.ceil(range / 2)],
             modifier: game.wfrp4e.config.difficultyModifiers[game.wfrp4e.config.rangeModifiers["Short Range"]],
             difficulty: game.wfrp4e.config.rangeModifiers["Short Range"]
         }
