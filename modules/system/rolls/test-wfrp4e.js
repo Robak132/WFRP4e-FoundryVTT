@@ -1,7 +1,7 @@
-import WFRP_Utility from '../utility-wfrp4e.js';
-import OpposedWFRP from '../opposed-wfrp4e.js';
-import WFRP_Audio from '../audio-wfrp4e.js';
-import CrewTest from '../crew-test.js';
+import WFRP_Utility from "../utility-wfrp4e.js";
+import OpposedWFRP from "../opposed-wfrp4e.js";
+import WFRP_Audio from "../audio-wfrp4e.js";
+import CrewTest from "../crew-test.js"
 
 export default class TestWFRP {
   constructor(data, actor) {
@@ -60,7 +60,7 @@ export default class TestWFRP {
       this.data.preData.other = ["Ograniczono modyfikator do przedziału [-60, +60]"];
       this.data.context.breakdown.modifier = newModifier
     }
-    if (this.data.preData.testDifficulty + this.data.preData.testModifier < 60) {
+    if (this.data.preData.testDifficulty + this.data.preData.testModifier < -60) {
       let newModifier = Math.max(this.data.preData.testModifier, -60 - this.data.preData.testDifficulty)
       this.data.preData.testModifier = newModifier
       this.data.preData.other = ["Ograniczono modyfikator do przedziału [-60, +60]"];
@@ -122,11 +122,6 @@ export default class TestWFRP {
       throw new Error(game.i18n.localize("ERROR.Speaker"))
 
     await this.rollDices();
-
-    if (this.data.preData.skillName == `${game.i18n.localize("Leczenie")}`) {
-      this.data.preData.options.heal = true
-    }
-
     await this.computeResult();
 
     await this.runPostEffects();
@@ -476,11 +471,6 @@ export default class TestWFRP {
       {
         this.result.crewTestSL *= 2;
       }
-    }
-
-    if (this.options.heal && this.result.outcome == "success") {
-      this.result.woundsHealed = Math.max(Math.trunc(this.result.SL) + this.options.intb, 0);
-      this.result.other.push(`${this.result.woundsHealed} ${game.i18n.localize("Wounds Healed")}`);
     }
 
     if (this.options.rest) {

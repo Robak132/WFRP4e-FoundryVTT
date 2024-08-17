@@ -793,7 +793,7 @@ export default class ActorSheetWfrp4e extends WFRP4eSheetMixin(ActorSheet) {
 
     if (ev.button == 0) {
       skill = this.actor.items.get(itemId);
-      this.actor.setupSkill(skill, {intb: this.actor.characteristics.int.bonus}).then(test => {
+      this.actor.setupSkill(skill).then(test => {
         test.roll();
       })
     }
