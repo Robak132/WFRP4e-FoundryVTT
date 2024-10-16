@@ -1,13 +1,13 @@
 import WFRP_Utility from "../utility-wfrp4e.js";
-import OpposedWFRP from "../opposed-wfrp4e.js";
+import OpposedHandler from "../opposed-handler.js";
 import WFRP_Audio from "../audio-wfrp4e.js";
 import CrewTest from "../crew-test.js"
 
-export default class TestWFRP {
+export default class TestWFRP extends WarhammerTestBase{
   constructor(data, actor) {
+    super();
     if (!data)
       data = {}
-
     this.data = {
       preData: {
         title: data.title,
@@ -114,7 +114,6 @@ export default class TestWFRP {
   async roll() {
     await this.runPreEffects();
 
-
     this.reset();
     if (!this.preData.item)
       throw new Error(game.i18n.localize("ERROR.Property"))
@@ -134,7 +133,7 @@ export default class TestWFRP {
       await this.handleOpposed();
     }
 
-    WFRP_Utility.log("Rolled Test: ", undefined, this)
+    warhammer.utility.log("Rolled Test: ", undefined, this)
     return this
   }
 
@@ -165,10 +164,10 @@ export default class TestWFRP {
 
   /**
      * Provides the basic evaluation of a test.
-     *
+     * 
      * This function, when given the necessary data (target number, SL bonus, etc.) provides the
      * basic test evaluation - rolling the test (if not already given), determining SL, success, description, critical/fumble if needed.
-     *
+     * 
      * @param {Object} this.data  Test info: target number, SL bonus, success bonus, (opt) roll, etc
      */
   async computeResult() {
@@ -256,7 +255,7 @@ export default class TestWFRP {
           this.result.other.push(game.i18n.localize("ROLL.HitAnotherEngagedTarget"))
         }
       }
-
+  
     }
 
     // ********** Success **********
@@ -391,7 +390,7 @@ export default class TestWFRP {
       {
         this.result.hitloc.description = this.preData.hitLocationTable[this.preData.selectedHitLocation] + ` (${game.i18n.localize("ROLL.CalledShot")})`
       }
-
+      
     }
 
     let roll = this.result.roll
@@ -428,7 +427,7 @@ export default class TestWFRP {
     if (this.result.critical && this.item.properties?.qualities.warpstone) {
       this.result.other.push(`@Corruption[minor]{Minor Exposure to Corruption}`)
     }
-
+    
     //@HOUSE
     if (game.settings.get("wfrp4e", "mooCriticalMitigation") && this.result.critical) {
       game.wfrp4e.utility.logHomebrew("mooCriticalMitigation")
@@ -444,7 +443,7 @@ export default class TestWFRP {
         }
       }
       catch (e) {
-        game.wfrp4e.utility.log("Error appyling homebrew mooCriticalMitigation: " + e)
+        warhammer.utility.log("Error appyling homebrew mooCriticalMitigation: " + e)
       }
     }
     //@/HOUSE
@@ -488,7 +487,7 @@ export default class TestWFRP {
 
     if (this.options.crewTest)
     {
-
+      
       let crewTestMessage = game.messages.get(this.options.crewTestMessage)
       let crewTestData = crewTestMessage.getFlag("wfrp4e", "crewTestData");
       let crewTest = CrewTest.fromData(crewTestData);
@@ -496,9 +495,9 @@ export default class TestWFRP {
     }
   }
 
-  async handleSoundContext(chatOptions)
+  async handleSoundContext(chatOptions) 
   {
-
+    
     try {
       let contextAudio = await WFRP_Audio.MatchContextAudio(WFRP_Audio.FindContext(this))
       chatOptions.sound = contextAudio.file || chatOptions.sound
@@ -510,7 +509,7 @@ export default class TestWFRP {
   /**
    * Handles opposed context - if actor has been targeted, roll defense. If this test has targets, roll attack
    * Test objects may have one or more opposed test message IDs. If these IDs exist, that means this test is
-   * either rerolled, edited, etc. and the opposed result needs to know of the new test (via updating message ID).
+   * either rerolled, edited, etc. and the opposed result needs to know of the new test (via updating message ID). 
    * The opposed test may also need to be recalculated if the defender test exists
    */
   async handleOpposed() {
@@ -529,23 +528,23 @@ export default class TestWFRP {
         opposeMessage = game.messages.get(this.actor.flags.oppose.opposeMessageId);
         this.context.opposedMessageIds.push(opposeMessage.id); // Maintain a link to the opposed message
       }
-
+      
       // Get oppose message, set this test's message as defender, compute result
-      let oppose = opposeMessage.getOppose();
-      await oppose.setDefender(this.message);
-      await oppose.computeOpposeResult();
+      let handler = opposeMessage.system.opposedHandler;
+      await handler.setDefender(this.message);
+      await handler.computeOpposeResult();
       await this.actor.clearOpposed();
-      await this.updateMessageFlags();
+      await this.updateMessageData();
     }
-    else // if actor is attacking - rerolling old test.
+    else // if actor is attacking - rerolling old test. 
     {
       if (this.opposedMessages.length)
       {
         for (let message of this.opposedMessages) {
-          let oppose = message.getOppose();
-          await oppose.setAttacker(this.message); // Make sure the opposed test is using the most recent message from this test
-          if (oppose.defenderTest) // If defender has rolled (such as if this test was rerolled or edited after the defender rolled) - recompute opposed test
-            await oppose.computeOpposeResult()
+          let handler = message.system.opposedHandler;
+          await handler.setAttacker(this.message); // Make sure the opposed test is using the most recent message from this test
+          if (handler.defenderTest) // If defender has rolled (such as if this test was rerolled or edited after the defender rolled) - recompute opposed test
+            await handler.computeOpposeResult()
         }
       }
       else { // actor is attacking - new test
@@ -561,20 +560,11 @@ export default class TestWFRP {
     let { standing, tier } = this.options.income
     let result = this.result;
 
-    let dieAmount = game.wfrp4e.config.earningValues[tier] // b, s, or g maps to 2d10, 1d10, or 1 respectively (takes the first letter)
-    dieAmount = parseInt(dieAmount) * standing;     // Multilpy that first letter by your standing (Brass 4 = 8d10 pennies)
-    let moneyEarned;
-    if (tier != "g") // Don't roll for gold, just use standing value
-    {
-      dieAmount = dieAmount + "d10";
-      moneyEarned = (await new Roll(dieAmount).roll()).total;
-    }
-    else
-      moneyEarned = dieAmount;
+    let {earned} = await game.wfrp4e.market.rollIncome(null, {standing, tier})
 
     // After rolling, determined how much, if any, was actually earned
     if (result.outcome == "success") {
-      this.result.incomeResult = game.i18n.localize("INCOME.YouEarn") + " " + moneyEarned;
+      this.result.incomeResult = game.i18n.localize("INCOME.YouEarn") + " " + earned;
       switch (tier) {
         case "b":
           result.incomeResult += ` ${game.i18n.localize("NAME.BPPlural").toLowerCase()}.`
@@ -583,7 +573,7 @@ export default class TestWFRP {
           result.incomeResult += ` ${game.i18n.localize("NAME.SSPlural").toLowerCase()}.`
           break;
         case "g":
-          if (moneyEarned == 1)
+          if (earned == 1)
             result.incomeResult += ` ${game.i18n.localize("NAME.GC").toLowerCase()}.`
           else
             result.incomeResult += ` ${game.i18n.localize("NAME.GCPlural").toLowerCase()}.`
@@ -591,8 +581,8 @@ export default class TestWFRP {
       }
     }
     else if (Number(result.SL) > -6) {
-      moneyEarned /= 2;
-      result.incomeResult = game.i18n.localize("INCOME.YouEarn") + " " + moneyEarned;
+      earned /= 2;
+      result.incomeResult = game.i18n.localize("INCOME.YouEarn") + " " + earned;
       switch (tier) {
         case "b":
           result.incomeResult += ` ${game.i18n.localize("NAME.BPPlural").toLowerCase()}.`
@@ -601,7 +591,7 @@ export default class TestWFRP {
           result.incomeResult += ` ${game.i18n.localize("NAME.SSPlural").toLowerCase()}.`
           break;
         case "g":
-          if (moneyEarned == 1)
+          if (earned == 1)
             result.incomeResult += ` ${game.i18n.localize("NAME.GC").toLowerCase()}.`
           else
             result.incomeResult += ` ${game.i18n.localize("NAME.GCPlural").toLowerCase()}.`
@@ -610,11 +600,11 @@ export default class TestWFRP {
     }
     else {
       result.incomeResult = game.i18n.localize("INCOME.Failure")
-      moneyEarned = 0;
+      earned = 0;
     }
     // let contextAudio = await WFRP_Audio.MatchContextAudio(WFRP_Audio.FindContext(test))
     // cardOptions.sound = contextAudio.file || cardOptions.sound
-    result.moneyEarned = moneyEarned + tier;
+    result.earned = earned + tier;
   }
 
 
@@ -623,19 +613,19 @@ export default class TestWFRP {
     let failed = this.failed
     let corruption = 0 // Corruption GAINED
     switch (strength) {
-      case "minor":
+      case game.i18n.localize("CORRUPTION.Minor").toLowerCase():
         if (failed)
           corruption++;
         break;
 
-      case "moderate":
+        case game.i18n.localize("CORRUPTION.Moderate").toLowerCase():
         if (failed)
           corruption += 2
         else if (this.result.SL < 2)
           corruption += 1
         break;
 
-      case "major":
+        case game.i18n.localize("CORRUPTION.Major").toLowerCase():
         if (failed)
           corruption += 3
         else if (this.result.SL < 2)
@@ -682,9 +672,9 @@ export default class TestWFRP {
     await this.actor.update({ "system.status.corruption.value": newCorruption })
   }
 
-  async handleMutationResult()
+  async handleMutationResult() 
   {
-    if (this.failed)
+    if (this.failed) 
     {
       let wpb = this.actor.system.characteristics.wp.bonus;
       let tableText = game.i18n.localize("CHAT.MutateTable") + "<br>" + game.wfrp4e.config.corruptionTables.map(t => `@Table[${t}]<br>`).join("")
@@ -694,13 +684,13 @@ export default class TestWFRP {
       <p>${game.i18n.format("CHAT.CorruptionLoses", { name: this.actor.name, number: wpb })}
       <p>${tableText}</p>`,
         "gmroll", false))
-      this.actor.update({ "system.status.corruption.value": Number(this.actor.system.status.corruption.value) - wpb })
+      this.actor.update({ "system.status.corruption.value": Number(this.actor.system.status.corruption.value) - wpb }, {skipCorruption: true}) // Don't keep checking corruption, causes a possible loop of dialogs
     }
     else
       ChatMessage.create(WFRP_Utility.chatDataSetup(game.i18n.localize("CHAT.MutateSuccess"), "gmroll", false))
 
   }
-
+  
   async handleExtendedTest() {
     let item = fromUuidSync(this.options.extended);
     let deleteTest = false;
@@ -714,7 +704,7 @@ export default class TestWFRP {
         this.result.SL = this.result.roll <= this.result.target ? 1 : -1
       }
 
-      if (itemData.system.failingDecreases.value)
+      if (itemData.system.failingDecreases.value) 
       {
         itemData.system.SL.current += SL
         if (!itemData.system.negativePossible.value && itemData.system.SL.current < 0)
@@ -745,7 +735,7 @@ export default class TestWFRP {
         {
           itemData.system.SL.current = 0;
         }
-        else if (itemData.system.completion.value == "remove")
+        else if (itemData.system.completion.value == "remove") 
         {
           deleteTest = true;
         }
@@ -758,8 +748,8 @@ export default class TestWFRP {
       {
         await item.delete();
       }
-      else
-      {
+      else 
+      { 
         await item.update(itemData)
       }
     }
@@ -803,11 +793,12 @@ export default class TestWFRP {
  * @param {Object} testData - Test results, values to display, etc.
  * @param {Object} rerenderMessage - Message object to be updated, instead of rendering a new message
  */
-  async renderRollCard({ newMessage = false } = {}) {
+  async renderRollCard({ newMessage = false } = {})
+  {
 
-    let chatOptions = this.context.chatOptions
+    let messageData = foundry.utils.deepClone(this.context.chatOptions);
 
-    await this.handleSoundContext(chatOptions)
+    await this.handleSoundContext(messageData)
 
     this.result.breakdown.formatted = this.formatBreakdown()
 
@@ -815,11 +806,11 @@ export default class TestWFRP {
     if (game.settings.get("wfrp4e", "manualChatCards") && !this.message)
       this.result.roll = this.result.SL = null;
 
-    if (game.modules.get("dice-so-nice") && game.modules.get("dice-so-nice").active && chatOptions.sound?.includes("dice"))
-      chatOptions.sound = undefined;
+    if (game.modules.get("dice-so-nice") && game.modules.get("dice-so-nice").active && messageData.sound?.includes("dice"))
+      messageData.sound = undefined;
 
-    let chatData = {
-      title: chatOptions.title,
+    let templateData = {
+      title: messageData.title,
       test: this,
       hideData: game.user.isGM,
 
@@ -835,12 +826,12 @@ export default class TestWFRP {
 
 
     if (this.context.targets.length) {
-      chatData.title += ` - ${game.i18n.localize("Opposed")}`;
+      templateData.title += ` - ${game.i18n.localize("Opposed")}`;
     }
 
-    ChatMessage.applyRollMode(chatOptions, chatOptions.rollMode)
+    ChatMessage.applyRollMode(messageData, messageData.rollMode)
 
-    let html = await renderTemplate(chatOptions.template, chatData)
+    let html = await renderTemplate(messageData.template, templateData)
 
     if (newMessage || !this.message) {
       // If manual chat cards, convert elements to blank inputs
@@ -857,65 +848,62 @@ export default class TestWFRP {
         html = blank.html();
       }
 
-      chatOptions["content"] = html;
-      if (chatOptions.sound)
-        WFRP_Utility.log(`Playing Sound: ${chatOptions.sound}`)
-      let message = await ChatMessage.create(foundry.utils.mergeObject(duplicate(chatOptions), {flags : {testData: this.data}}))
+      messageData.content = html;
+      if (messageData.sound)
+        warhammer.utility.log(`Playing Sound: ${messageData.sound}`)
+
+      messageData.system = {testData : this.data};
+      messageData.type = "test";
+      let message = await ChatMessage.create(messageData)
+
       this.context.messageId = message.id
-      await this.updateMessageFlags()
+      await this.updateMessageData()
     }
-    else // Update message
+    else // Update message 
     {
-      // Emit the HTML as a chat message
-      chatOptions["content"] = html;
-      // if (chatOptions.sound) {
-      //   console.log(`wfrp4e | Playing Sound: ${chatOptions.sound}`)
-      //   AudioHelper.play({ src: chatOptions.sound }, true) // Play sound manually as updating doesn't trigger it
-      // }
+      messageData.content = html;
 
       // Update Message if allowed, otherwise send a request to GM to update
       if (game.user.isGM || this.message.isAuthor) {
-        await this.message.update(chatOptions)
+        await this.message.update(messageData)
       }
       else {
-        await game.wfrp4e.socket.executeOnUserAndWait("GM", "updateMsg", { id: this.message.id, updateData : chatOptions });
+        await SocketHandlers.executeOnUserAndWait("GM", "updateMessage", { id: this.message.id, updateData : messageData });
       }
-      await this.updateMessageFlags()
+      await this.updateMessageData()
     }
   }
 
-
-
   // Update message data without rerendering the message content
-  async updateMessageFlags(updateData = {}) {
+  async updateMessageData(updateData = {}) {
     let data = foundry.utils.mergeObject(this.data, updateData, { overwrite: true })
-    let update = { "flags.testData": data }
-
+    let update = { "system.testData": data }
+    
     if (this.message && game.user.isGM)
       await this.message.update(update)
 
     else if (this.message) {
-      await game.wfrp4e.socket.executeOnUserAndWait("GM", "updateMsg", { id: this.message.id, updateData : update });
+      await SocketHandlers.executeOnUserAndWait("GM", "updateMessage", { id: this.message.id, updateData : update });
     }
   }
 
 
   async createOpposedMessage(token) {
-    let oppose = new OpposedWFRP();
+    let oppose = new OpposedHandler();
     await oppose.setAttacker(this.message);
     let opposeMessageId = await oppose.startOppose(token);
     if (opposeMessageId) {
       this.context.opposedMessageIds.push(opposeMessageId);
     }
-    await this.updateMessageFlags();
+    await this.updateMessageData();
   }
 
 
 
   /**
    * Add support for the Dice So Nice module
-   * @param {Object} roll
-   * @param {String} rollMode
+   * @param {Object} roll 
+   * @param {String} rollMode 
    */
   async _showDiceSoNice(roll, rollMode, speaker) {
     if (game.modules.get("dice-so-nice") && game.modules.get("dice-so-nice").active) {
@@ -993,7 +981,7 @@ export default class TestWFRP {
 
     overcastData.available = overcastData.total - sum;
 
-    //@HOUSE
+    //@HOUSE 
     if (game.settings.get("wfrp4e", "mooOvercasting") && this.spell) {
       game.wfrp4e.utility.logHomebrew("mooOvercasting")
 
@@ -1002,8 +990,8 @@ export default class TestWFRP {
       await this.calculateDamage()
     }
     //@/HOUSE
-
-    await this.updateMessageFlags();
+    
+    await this.updateMessageData();
     await this.renderRollCard()
   }
 
@@ -1015,7 +1003,7 @@ export default class TestWFRP {
         overcastData.usage[overcastType].current = overcastData.usage[overcastType].initial
       }
     }
-    //@HOUSE
+    //@HOUSE 
     if (game.settings.get("wfrp4e", "mooOvercasting")) {
       game.wfrp4e.utility.logHomebrew("mooOvercasting")
       let multiplier = (game.settings.get("wfrp4e-eis", "dharRules") && game.wfrp4e.config.magicWind[this.spell.lore.value] == "Dhar") ? 1 : 2
@@ -1024,7 +1012,7 @@ export default class TestWFRP {
     }
     //@/HOUSE
     overcastData.available = overcastData.total;
-    await this.updateMessageFlags();
+    await this.updateMessageData();
     await this.renderRollCard()
   }
 
@@ -1032,7 +1020,7 @@ export default class TestWFRP {
 
     if(this.preData.unofficialGrimoire) {
       game.wfrp4e.utility.logHomebrew("unofficialgrimoire");
-      let controlIngredient = this.preData.unofficialGrimoire.ingredientMode == 'control';
+      let controlIngredient = this.preData.unofficialGrimoire.ingredientMode == 'control'; 
       if (miscastCounter == 1) {
           if (this.hasIngredient && controlIngredient)
             this.result.nullminormis = game.i18n.localize("ROLL.MinorMis")
@@ -1079,7 +1067,7 @@ export default class TestWFRP {
       }
       else if (!game.settings.get("wfrp4e", "mooCatastrophicMiscasts") && miscastCounter >= 3)
         this.result.majormis = game.i18n.localize("ROLL.MajorMis")
-
+  
       //@HOUSE
       else if (game.settings.get("wfrp4e", "mooCatastrophicMiscasts") && miscastCounter >= 3) {
         game.wfrp4e.utility.logHomebrew("mooCatastrophicMiscasts")
@@ -1121,7 +1109,7 @@ export default class TestWFRP {
       if (breakdown.slBonus || (breakdown.successBonus && this.succeeded))
       {
         let SLstring = `<p><strong>${game.i18n.localize("SL")}</strong>: ${this.result.baseSL} (Base)`
-
+        
         if (breakdown.slBonus)
         {
           if (breakdown.slBonus > 0)
@@ -1134,7 +1122,7 @@ export default class TestWFRP {
           }
           SLstring += ` (${game.i18n.localize("DIALOG.SLBonus")})`;
         }
-
+        
         if (breakdown.successBonus && this.succeeded)
         {
           if (breakdown.successBonus > 0)
@@ -1179,6 +1167,58 @@ export default class TestWFRP {
 
   }
 
+
+
+    /**
+   * Use a fortune point from the actor to reroll or add sl to a roll
+   * @param {String} type (reroll, addSL)
+   */
+    useFortune(type) {
+      if (this.actor.system.status.fortune?.value > 0)
+      {
+        let html = `<h3 class="center"><b>${game.i18n.localize("FORTUNE.Use")}</b></h3>`;
+        //First we send a message to the chat
+        if (type == "reroll")
+          html += `${game.i18n.format("FORTUNE.UsageRerollText", { character: '<b>' + this.actor.name + '</b>' })}<br>`;
+        else
+          html += `${game.i18n.format("FORTUNE.UsageAddSLText", { character: '<b>' + this.actor.name + '</b>' })}<br>`;
+
+        html += `<b>${game.i18n.localize("FORTUNE.PointsRemaining")} </b>${this.actor.system.status.fortune.value - 1}`;
+        ChatMessage.create(WFRP_Utility.chatDataSetup(html));
+
+
+        if (type == "reroll") {
+          this.context.fortuneUsedReroll = true;
+          this.context.fortuneUsedAddSL = true;
+          this.reroll()
+
+        }
+        else //add SL
+        {
+          this.context.fortuneUsedAddSL = true;
+          this.addSL(1)
+        }
+        this.actor.update({ "system.status.fortune.value": this.actor.system.status.fortune.value - 1 });
+      }
+    }
+
+      /**
+   * Take a Dark Deal to reroll for +1 Corruption
+   * @param {Object} message
+   */
+  useDarkDeal() {
+    let html = `<h3 class="center"><b>${game.i18n.localize("DARKDEAL.Use")}</b></h3>`;
+    html += `${game.i18n.format("DARKDEAL.UsageText", { character: '<b>' + this.actor.name + '</b>' })}<br>`;
+
+    let corruption = Math.trunc(this.actor.system.status.corruption.value) + 1;
+    html += `<b>${game.i18n.localize("Corruption")}: </b>${corruption}/${this.actor.system.status.corruption.max}`;
+
+    ChatMessage.create(WFRP_Utility.chatDataSetup(html));
+    this.actor.update({ "system.status.corruption.value": corruption });
+
+    this.reroll()
+  }
+
   get message() {
     return game.messages.get(this.context.messageId)
   }
@@ -1192,22 +1232,6 @@ export default class TestWFRP {
 
   get fortuneUsed() {
     return { reroll: this.context.fortuneUsedReroll, SL: this.context.fortuneUsedAddSL }
-  }
-
-
-  get damageEffects()
-  {
-      return this.item.damageEffects;
-  }
-
-  get targetEffects()
-  {
-      return this.item.targetEffects;
-  }
-
-  get areaEffects()
-  {
-      return this.item.areaEffects;
   }
 
 
@@ -1242,7 +1266,7 @@ export default class TestWFRP {
   get useMount() {
     return this.item.attackType == "melee" && this.actor.isMounted && this.actor.mount && this.result.charging
   }
-
+  
   get target() { return this.data.result.target }
   get successBonus() { return this.data.preData.successBonus }
   get slBonus() { return this.data.preData.slBonus }
@@ -1267,6 +1291,10 @@ export default class TestWFRP {
 
   get targets() {
     return this.context.targets.map(i => WFRP_Utility.getSpeaker(i))
+  }
+
+  get targetTokens() {
+    return this.context.targets.map(i => game.scenes.get(i.scene)?.tokens.get(i.token))
   }
 
   get doesDamage() {

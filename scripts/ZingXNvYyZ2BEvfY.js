@@ -61,7 +61,7 @@ for (let trapping of trappings)
     {
         trappingItem = trappingItem.toObject()
 
-        equip(trappingItem)
+        trappingItem.system.equipped.value = true;
 
         items.push(trappingItem);
     }
@@ -71,7 +71,7 @@ for (let trapping of trappings)
     }
 }
 
-let weapons = await game.wfrp4e.utility.findAll("weapon", "Loading Weapons");
+let weapons = await warhammer.utility.findAllItems("weapon", "Loading Weapons");
 
 items = items.concat((await game.wfrp4e.apps.ItemDialog.create([await fromUuid("Compendium.wfrp4e-core.items.Item.1zaqojk0Oq1m8vYv"), await fromUuid("Compendium.wfrp4e-core.items.Item.bBX8MP6QfcyU6Fy3")], 1, "Choose a Weapon")) || [])
 
@@ -83,13 +83,3 @@ updateObj.name = updateObj.name += " " + this.effect.name
 
 await this.actor.update(updateObj)
 this.actor.createEmbeddedDocuments("Item", items);
-
-function equip(item)
-{
-    if (item.type == "armour")
-        item.system.worn.value = true
-    else if (item.type == "weapon")
-        item.system.equipped = true
-    else if (item.type == "trapping" && item.system.trappingType.value == "clothingAccessories")
-        item.system.worn = true
-}

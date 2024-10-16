@@ -177,7 +177,7 @@ export default class WomCastTest extends CastTest {
       let overcastSpend = game.wfrp4e.config.magicWind[this.spell.lore.value] !== "Dhar" ? overcastData.total - overcastData.available : Math.floor((overcastData.total - overcastData.available) / 2)
       this.data.result.SL = `+${overcastData.originalSL - overcastSpend}`;
       await this.calculateDamage()
-      await this.updateMessageFlags();
+      await this.updateMessageData();
       this.renderRollCard()
     }
   }
