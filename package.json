@@ -5,7 +5,7 @@
   "main": "wfrp4e.js",
   "type": "module",
   "scripts": {
-    "build": "node scriptPacker.js&& cross-env NODE_ENV=development rollup --config rollup.config.mjs --watch",
+    "build": "node scriptPacker.js&& cross-env NODE_ENV=development rollup --config rollup.config.mjs&& cross-env NODE_ENV=development node dbpacker.js",
     "release": "node scriptPacker.js&& cross-env NODE_ENV=production rollup --config rollup.config.mjs&& cross-env NODE_ENV=production node dbpacker.js",
     "pack": "node dbpacker.js"
   },
