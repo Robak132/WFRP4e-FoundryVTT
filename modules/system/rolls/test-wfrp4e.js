@@ -136,6 +136,7 @@ export default class TestWFRP extends WarhammerTestBase{
   async reroll() {
     this.context.previousResult = this.result
     this.context.reroll = true;
+    this.context.previousMessage = this.message.id;
     delete this.result.roll;
     delete this.result.hitloc
     delete this.preData.hitloc
@@ -679,7 +680,7 @@ export default class TestWFRP extends WarhammerTestBase{
       <p>${game.i18n.localize("CHAT.Dissolution")}</p>
       <p>${game.i18n.format("CHAT.CorruptionLoses", { name: this.actor.name, number: wpb })}
       <p>${tableText}</p>`,
-        "gmroll", false))
+        "gmroll", false))  
       this.actor.update({ "system.status.corruption.value": Number(this.actor.system.status.corruption.value) - wpb }, {skipCorruption: true}) // Don't keep checking corruption, causes a possible loop of dialogs
     }
     else
@@ -789,7 +790,7 @@ export default class TestWFRP extends WarhammerTestBase{
  * @param {Object} testData - Test results, values to display, etc.
  * @param {Object} rerenderMessage - Message object to be updated, instead of rendering a new message
  */
-  async renderRollCard({ newMessage = false } = {})
+  async renderRollCard({ newMessage = false } = {}) 
   {
 
     let messageData = foundry.utils.deepClone(this.context.chatOptions);
@@ -1016,7 +1017,7 @@ export default class TestWFRP extends WarhammerTestBase{
 
     if(this.preData.unofficialGrimoire) {
       game.wfrp4e.utility.logHomebrew("unofficialgrimoire");
-      let controlIngredient = this.preData.unofficialGrimoire.ingredientMode == 'control'; 
+      let controlIngredient = this.preData.ingredientMode == 'control';
       if (miscastCounter == 1) {
           if (this.hasIngredient && controlIngredient)
             this.result.nullminormis = game.i18n.localize("ROLL.MinorMis")
@@ -1178,16 +1179,16 @@ export default class TestWFRP extends WarhammerTestBase{
           html += `${game.i18n.format("FORTUNE.UsageRerollText", { character: '<b>' + this.actor.name + '</b>' })}<br>`;
         else
           html += `${game.i18n.format("FORTUNE.UsageAddSLText", { character: '<b>' + this.actor.name + '</b>' })}<br>`;
-
+  
         html += `<b>${game.i18n.localize("FORTUNE.PointsRemaining")} </b>${this.actor.system.status.fortune.value - 1}`;
-        ChatMessage.create(WFRP_Utility.chatDataSetup(html));
-
-
+        ChatMessage.create(WFRP_Utility.chatDataSetup(html, "gmroll"));
+  
+  
         if (type == "reroll") {
           this.context.fortuneUsedReroll = true;
           this.context.fortuneUsedAddSL = true;
           this.reroll()
-
+  
         }
         else //add SL
         {
@@ -1200,16 +1201,16 @@ export default class TestWFRP extends WarhammerTestBase{
 
       /**
    * Take a Dark Deal to reroll for +1 Corruption
-   * @param {Object} message
+   * @param {Object} message 
    */
   useDarkDeal() {
     let html = `<h3 class="center"><b>${game.i18n.localize("DARKDEAL.Use")}</b></h3>`;
     html += `${game.i18n.format("DARKDEAL.UsageText", { character: '<b>' + this.actor.name + '</b>' })}<br>`;
-
+    
     let corruption = Math.trunc(this.actor.system.status.corruption.value) + 1;
     html += `<b>${game.i18n.localize("Corruption")}: </b>${corruption}/${this.actor.system.status.corruption.max}`;
 
-    ChatMessage.create(WFRP_Utility.chatDataSetup(html));
+    ChatMessage.create(WFRP_Utility.chatDataSetup(html, "gmroll"));
     this.actor.update({ "system.status.corruption.value": corruption });
 
     this.reroll()
@@ -1229,7 +1230,7 @@ export default class TestWFRP extends WarhammerTestBase{
   get fortuneUsed() {
     return { reroll: this.context.fortuneUsedReroll, SL: this.context.fortuneUsedAddSL }
   }
-
+  
 
   get targetModifiers() {
     return this.preData.testModifier + this.preData.testDifficulty + (this.preData.postOpposedModifiers.target || 0)
