@@ -6,7 +6,7 @@
     {{#if test.result.overcast.usage.damage}}
     <div class="overcast-section">
         <a class='overcast-button' {{#unless test.result.overcast.usage.damage.available}}style = "opacity: 0.5"{{/unless}} data-overcast="damage">{{test.result.overcast.usage.damage.label}}</a>
-        <a class="overcast-value damage">{{test.result.overcast.usage.damage.current}}{{#if nextOvercast-damage}} [{{nextOvercast-damage}}]{{/if}}</a>
+        <a class="overcast-value damage">{{test.result.overcast.usage.damage.current}}</a>
     </div>
     {{/if}}
 
@@ -14,9 +14,9 @@
     <div class="overcast-section">
         <a class='overcast-button' {{#unless test.result.overcast.usage.target.available}}style = "opacity: 0.5"{{/unless}} data-overcast="target">{{test.result.overcast.usage.target.label}}</a>
         {{#if test.result.overcast.usage.target.AoE}}
-        <a class="overcast-value aoe-template target" data-type="diameter" data-id="{{test.preData.item}}" data-actor-id="{{test.actor.id}}"><i class="fas fa-ruler-combined"></i> {{test.result.overcast.usage.target.current}} {{test.result.overcast.usage.target.unit}}{{#if nextOvercast-AoE}} [{{nextOvercast-AoE}}]{{/if}}</a>
+        <a class="overcast-value aoe-template target" data-type="diameter" data-id="{{test.preData.item}}" data-actor-id="{{test.actor.id}}" ><i class="fas fa-ruler-combined"></i> {{test.result.overcast.usage.target.current}} {{test.result.overcast.usage.target.unit}}</a>
         {{else}}
-        <a class="overcast-value target">{{test.result.overcast.usage.target.current}} {{test.result.overcast.usage.target.unit}}{{#if nextOvercast-target}} [{{nextOvercast-target}}]{{/if}}</a>
+        <a class="overcast-value target">{{test.result.overcast.usage.target.current}} </a>
         {{/if}}
     </div>
     {{/if}}
@@ -24,14 +24,14 @@
     {{#if test.result.overcast.usage.duration}}
     <div class="overcast-section">
         <a class='overcast-button' {{#unless test.result.overcast.usage.duration.available}}style = "opacity: 0.5"{{/unless}} data-overcast="duration">{{test.result.overcast.usage.duration.label}}</a>
-        <a class="overcast-value duration">{{test.result.overcast.usage.duration.current}} {{test.result.overcast.usage.duration.unit}}{{#if nextOvercast-duration}} [{{nextOvercast-duration}}]{{/if}}</a>
+        <a class="overcast-value duration">{{test.result.overcast.usage.duration.current}} {{test.result.overcast.usage.duration.unit}}</a>
     </div>
     {{/if}}
     
     {{#if test.result.overcast.usage.range}}
     <div class="overcast-section">
         <a class='overcast-button' {{#unless test.result.overcast.usage.range.available}}style = "opacity: 0.5"{{/unless}} data-overcast="range">{{test.result.overcast.usage.range.label}}</a>
-        <a class="overcast-value range">{{test.result.overcast.usage.range.current}} {{test.result.overcast.usage.range.unit}}{{#if nextOvercast-range}} [{{nextOvercast-range}}]{{/if}}</a>
+        <a class="overcast-value range">{{test.result.overcast.usage.range.current}} {{test.result.overcast.usage.range.unit}}</a>
     </div>
     {{/if}}
 

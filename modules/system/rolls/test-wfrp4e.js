@@ -118,7 +118,7 @@ export default class TestWFRP extends WarhammerTestBase{
 
     await this.rollDices();
     await this.computeResult();
-
+    this.computeTables();
     await this.runPostEffects();
     await this.postTest();
 
@@ -197,6 +197,10 @@ export default class TestWFRP extends WarhammerTestBase{
 
 
     let baseSL = (Math.floor(target / 10) - Math.floor(this.result.roll / 10));
+    if (game.settings.get("wfrp4e", "SLMethod") == "dos")
+    {
+      baseSL = Math.floor(Math.abs(target - this.result.roll) / 10) * ((target - this.result.roll) < 0 ? -1 : 1);
+    }
     let SL
     if (this.preData.SL == 0)
       SL = this.preData.SL
@@ -259,7 +263,8 @@ export default class TestWFRP extends WarhammerTestBase{
     else if (this.result.roll <= automaticSuccess || this.result.roll <= target) {
       description = game.i18n.localize("ROLL.Success")
       outcome = "success"
-      if (game.settings.get("wfrp4e", "fastSL")) {
+      if (game.settings.get("wfrp4e", "SLMethod") == "fast") 
+      {
         let rollString = this.result.roll.toString();
         if (rollString.length == 2)
           SL = Number(rollString.split('')[0])
@@ -415,6 +420,27 @@ export default class TestWFRP extends WarhammerTestBase{
       }
     }
     return this.result
+  }
+
+  computeTables()
+  {
+    if (this.result.critical && this.result.hitloc)
+    {
+      this.result.tables.critical = {
+        label : this.result.critical,
+        class : "critical-roll",
+        modifier : this.result.critModifier,
+        key: `crit${this.result.hitloc.result}`
+      }
+    }
+    if (this.result.fumble)
+    {
+      this.result.tables.fumble = {
+        label : this.result.fumble,
+        class : "fumble-roll",
+        key : "oops"
+      }
+    }
   }
 
 
@@ -781,7 +807,8 @@ export default class TestWFRP extends WarhammerTestBase{
       roll: undefined,
       description: "",
       tooltips: {},
-      other: []
+      other: [],
+      tables: {} // label, column, modifier, style, class, nulled
     }, this.preData)
   }
 
@@ -811,14 +838,6 @@ export default class TestWFRP extends WarhammerTestBase{
       test: this,
       hideData: game.user.isGM,
 
-    }
-
-    if (this.spell != null && this.result.overcast !== undefined) {
-      messageData[`nextOvercast-damage`] = (game.wfrp4e.config.overCastTable['damage'][this.result.overcast.usage['damage']?.count ?? 0])?.cost;
-      messageData[`nextOvercast-AoE`] = (game.wfrp4e.config.overCastTable['AoE'][this.result.overcast.usage['target']?.count ?? 0])?.cost;
-      messageData[`nextOvercast-target`] = (game.wfrp4e.config.overCastTable['target'][this.result.overcast.usage['target']?.count ?? 0])?.cost;
-      messageData[`nextOvercast-duration`] = (game.wfrp4e.config.overCastTable['duration'][this.result.overcast.usage['duration']?.count ?? 0])?.cost;
-      messageData[`nextOvercast-range`] = (game.wfrp4e.config.overCastTable['range'][this.result.overcast.usage['range']?.count ?? 0])?.cost;
     }
 
 
@@ -1134,6 +1153,17 @@ export default class TestWFRP extends WarhammerTestBase{
         }
         testBreakdown += SLstring
       }
+
+      if (game.settings.get("wfrp4e", "SLMethod") != "default")
+      {
+        testBreakdown += "<p>SL Evaluated with " + (game.settings.get("wfrp4e", "SLMethod") == "fast" ? "Fast SL" : "Degrees of Success") + "</p>"
+      }
+
+      if (breakdown.modifier)
+      {
+        testBreakdown += `<p><strong>${game.i18n.localize("Modifier")}</strong>: ${HandlebarsHelpers.numberFormat(breakdown.modifier, {hash :{sign: true}})}</p>`
+      }
+
 
       if (breakdown.modifiersBreakdown)
       {
