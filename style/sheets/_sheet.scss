@@ -12,24 +12,27 @@
             display: flex;
             flex-direction: column;
             flex: 0 0 8rem;
-            margin-top: 8px;
-            margin-right: 5px;
+            margin-right: 0.5rem;
+            gap: 3px;
             .condition {
-                border: 1px solid var(--condition-border);
-                background: var(--condition-label);
-                margin: 3px;
                 height: 2rem;
                 line-height: 2rem;
                 display : flex;
                 justify-content: space-between;
                 > :first-of-type {
+                    background: var(--condition-label);
+                    border: 1px solid var(--condition-border);
+                    border-right: none;
                     padding: 0px 5px;
+                    width: 100%;
                 }
                 .controls {
-                background: var(--condition-control-bg);
-                text-align: center;
-                font-size: var(--font-size-16);
-                flex: 0 0 2rem;
+                    background: var(--condition-control-bg);
+                    border: 1px solid var(--condition-border);
+                    border-left: none;
+                    text-align: center;
+                    font-size: var(--font-size-16);
+                    flex: 0 0 2rem;
                 }
             }
         }

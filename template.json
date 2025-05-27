@@ -1207,7 +1207,13 @@
       "base",
       "test",
       "handler",
-      "opposed"
+      "opposed",
+      "item",
+      "pay",
+      "credit",
+      "xp",
+      "corruption",
+      "psych"
     ]
   }
 }

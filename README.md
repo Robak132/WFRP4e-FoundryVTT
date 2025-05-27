@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/github/downloads/moo-man/WFRP4e-FoundryVTT/latest/wfrp4e.zip?label=Downloads%20%28Latest%20Version%29)
 
-![](https://img.shields.io/badge/FoundryVTT%20Compatibility-V12-orange)
+![](https://img.shields.io/badge/FoundryVTT%20Compatibility-V13-orange)
 
 This system is intended for use with [Foundry Virtual Tabletop](http://foundryvtt.com/) to play in the grim and perilous world of Warhammer.
 
@@ -30,7 +30,9 @@ You can install the system from the Foundry system installer, simply search for 
 
 **Version 7.0**, Compatible with V11, and with a vastly improved Active Effect scriping system
 
-**Version 8.0**, Current version, Compatible with V12, implements the Warhammer Library module.
+**Version 8.0**, Compatible with V12, implements the Warhammer Library module.
+
+**Version 9.0**, Current version, Compatible with V13, all applications supporting AppV2.
 
 Please feel free to message me on Discord - moo.man
 
@@ -165,6 +167,8 @@ npm run pack
 - [Tribes & Tribulations](https://foundryvtt.com/packages/wfrp4e-tribes/) - Provides details on a number of these belligerent and spiteful creatures: Goblins, Orcs, Black Orcs, Hobgoblins, Snotlings, Ogres, and Trolls. Each specific tribe receives its own chapter, demonstrating the variety of Orc and Goblin warbands that plague the Old World and beyond.
 
 - [Places & Perils](https://foundryvtt.com/packages/wfrp4e-owb3/) - Contains seven more titles previously released as short PDF only options that will help expand your WFRP adventures, this time focused on various locations and people.
+
+- [Deft Steps Light Fingers](https://foundryvtt.com/packages/wfrp4e-dslf/) - A supplement for playing Characters in the Rogue or Ranger class.
 
 **Unofficial**
 

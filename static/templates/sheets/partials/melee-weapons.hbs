@@ -13,7 +13,7 @@
         </div>
         <div>{{localize "Group"}}</div>
         <div>{{localize "Damage"}}</div>
-        <div>{{localize "Reach"}}</div>
+        <div class="small" >{{localize "Reach"}}</div>
 
     </div>
     <div class="list-content weapon-list">
@@ -29,12 +29,12 @@
                         <a data-action="stepProperty" data-reversed="true" data-path="system.damageToItem.value"
                             class="prevent-context {{#if this.damageToItem.value}}damaged{{/if}}"
                             data-tooltip="{{localize 'SHEET.WeaponDamage'}}: {{this.damageToItem.value}}">+{{this.DamageString}}</a>
-                        <a data-action="combatDropdown" data-property="reach">{{this.Reach}}</a>
+                        <a class="small"  data-action="combatDropdown" data-property="reach">{{this.Reach}}</a>
                     </div>
                     <div class="item-property-row">
 
                         {{#if this.twohanded.value}}
-                            <div>{{localize "ITEM.TwoHanded"}}</div>
+                            <div class="twohanded-property">{{localize "ITEM.TwoHanded"}}</div>
                         {{else if this.offhand.value}}
                             <a data-action="toggleProperty" data-path="system.offhand.value"><i
                                     class="far fa-check-circle"></i> {{localize "SHEET.Offhand"}}</a>
@@ -54,7 +54,7 @@
 
                         {{#if this.system.UnusedQualities.length}}
                             <div class="property-icon inactive">{{localize "SHEET.Qualities"}}</div>
-                            {{{array this.system.UnusedQualities "inactive" action="itemPropertyDropdown" type="qualities"}}}
+                            {{{array this.system.UnusedQualities "inactive" action="itemPropertyDropdown" tooltip=(localize "SHEET.UnusedQualitiesHint") type="qualities"}}}
                         {{/if}}
 
                         {{#if this.system.InactiveQualities.length}}

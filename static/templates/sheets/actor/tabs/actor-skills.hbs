@@ -32,7 +32,7 @@
     </div>
 
     <div class="skill-lists {{#if showExtendedTests}}hidden{{/if}}">
-        <div class="sheet-list condensed">
+        <div class="sheet-list condensed basic">
             <div class="list-header row-content">
                 <div class="list-name">{{localize "Basic Skills"}}</div>
                 <div class="small">{{localize "SHEET.CharAbbrev"}}</div>
@@ -67,14 +67,18 @@
                             </div>
 
                             <a class="skill-total small {{this.system.modified}}" data-action="rollTest" data-type="skill">{{this.system.total.value}}</a>
-
-
                         </div>
                     </div>
                 {{/each}}
+                <div class="new-skill" data-type="bsc">
+                    <input data-action="addSkill" placeholder="+">
+                    <select data-action="addSkill">
+                        {{selectOptions (config "characteristicsAbbrev") blank=""}}
+                    </select>
+                </div>
             </div>
         </div>
-        <div class="sheet-list condensed">
+        <div class="sheet-list condensed advanced">
             <div class="list-header row-content">
                 <div class="list-name">{{localize "Grouped & Advanced Skills"}}</div>
                 <div class="small">{{localize "SHEET.CharAbbrev"}}</div>
@@ -113,11 +117,12 @@
                             <a class="skill-total small {{this.system.modified}}" data-action="rollTest" data-type="skill">{{this.system.total.value}}</a>
 
 
+
                         </div>
                     </div>
                 {{/each}}
                 {{#each system.details.career.system.untrainedSkills}}
-                    <div class="list-row inactive" data-nodrag="true">
+                    <div class="list-row inactive nocontext" data-nodrag="true">
                         <div class="row-content">
                             <div class="list-name">
                                 <a class="label" data-action="addUntrainedSkill">{{this}}</a>
@@ -125,6 +130,13 @@
                         </div>
                     </div>
                 {{/each}}
+                    <div class="new-skill" data-type="adv">
+                    <input data-action="addSkill" placeholder="+">
+                    <select data-action="addSkill">
+                        {{selectOptions (config "characteristicsAbbrev") blank=""}}
+                    </select>
+                </div>
+
             </div>
         </div>
     </div>

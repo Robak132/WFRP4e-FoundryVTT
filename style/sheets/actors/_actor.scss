@@ -1,3 +1,5 @@
+@use "../../mixins/flex" as *;
+
 .wfrp4e.actor.sheet.application {
 
     --header-label-line : var(--color-cool-3);
@@ -6,6 +8,8 @@
     --characteristic-total : transparent;
     --characteristic-border : var(--color-cool-3);
     --property-icon : var(--color-cool-3);
+    --tag-border: var(--color-cool-3);
+    --tag-bg: transparent;
     
     section.tab {
         overflow-y: auto
@@ -18,12 +22,26 @@
             width: 95px;
             height: 95px;
         }
+
+        &.limited {
+            height: 145px;
+        }
+    }
+
+    .editor-section.limited {
+        prose-mirror {
+            height: calc(100% - 1.5rem);
+        }
     }
 
     .detail-row {
         display: flex;
         flex-wrap: nowrap;
         align-items: center;
+
+        .attribute-box {
+            margin-left: 0.5rem;
+        }
     }
 
     .detail-rows {
@@ -84,7 +102,6 @@
         border-radius: 0px;
         text-align: center;
         background:none;
-        table-layout: fixed;
 
         tr {
             &:nth-child(even)
@@ -109,17 +126,16 @@
             border: 1px solid var(--characteristic-border);
             height: 1.75rem;
             width: auto;
-            &:first-child {
+            &.row-label {
+                width: 3rem;
+                padding: 0px 0.3rem;
                 text-align: left;
                 border-left: none;
-                overflow: hidden;
-                text-overflow: clip;
-                width: 200px;
             }
             &:last-child {
                 border-right: none;
             }
-            
+
             padding: 0px 0px;
         }
         input {
@@ -131,6 +147,9 @@
         }
 
         .table-header {
+            th {
+                line-height: 1.2rem;
+            }
             th div {
                 position: relative;
                 .advancement-indicator {
@@ -144,33 +163,20 @@
     }
 
 
+    .attribute-row {
+        gap: 5px;
+    }
+
     .attribute-box {
-        margin: 5px 5px;
+        margin: 5px 0px;
 
         &.movement {
             flex: 2;
-            div:nth-child(-n + 3) {
-                border-bottom: 1px solid var(--attribute-border);
-            }
         }
 
-        &.corruption,
-        &.criticals,
-        &.wounds {
-
-            a {
-                margin: 0px 5px;
-                font-size: var(--font-size-12);
-            }
-
-            .label {
-                border-bottom: 1px solid var(--attribute-border);
-            }
-        }
     }
 
     .sheet-list {
-        margin-top: 10px;
         .item-property-row {
             height: unset;
             display: flex;
@@ -194,6 +200,13 @@
                 text-align: center;
                 margin: 0px 3px;
             }
+            
+            .twohanded-property {
+                height: 1.5rem;
+                line-height: 1.5rem;
+                margin: 0px 3px;
+                padding: 0px 5px
+            }
         }
     }
 
@@ -203,6 +216,12 @@
     }
     .armour-section 
     {
+        > .flexrow {
+            margin-top: 0.5rem;
+        }
+        .sheet-list {
+            margin-top: 0px;
+        }
         .ap-source {
             text-align: center;
             background: var(--mount-outline);
@@ -220,6 +239,33 @@
             &.toughness {
                 background: radial-gradient(circle, rgba(221,221,221,0) 0%, rgba(27,143,35,1) 100%);
             }
+        }
+    }
+    .dropdown-content {
+        .tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+
+            .tag {
+                text-align: center;
+                border-radius: 5px;
+                border: 1px solid var(--tag-border);
+                background: var(--tag-bg);
+                padding: 0px 0.2rem;
+            }
+        }
+    }
+
+    .group-actions.expanded {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin-top: 0.5rem;
+
+        .group-action {
+            width: 100%;
+
         }
     }
 }

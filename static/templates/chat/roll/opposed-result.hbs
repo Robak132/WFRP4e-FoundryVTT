@@ -18,10 +18,15 @@
         </div>
         {{/each}}
         {{#if damage}}
-            <a class="apply-damage">{{localize "CHATOPT.ApplyDamage"}}</a>
+            {{#unless confirmation}}
+            <button data-action="applyDamage">{{localize "CHATOPT.ApplyDamage"}}</button>
+            {{/unless}}
+        {{/if}}
+        {{#if confirmation}}
+            {{{confirmation}}}
         {{/if}}
         {{#if showDualWielding}}
-            <p><a class='chat-button dual-wielder'>Roll Dual Wielder Attack</a></p>
+            <p><a class='chat-button' data-action="rollDualWielder">Roll Dual Wielder Attack</a></p>
         {{/if}}
     </div>
 </div>
