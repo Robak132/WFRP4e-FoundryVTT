@@ -46,7 +46,8 @@
                     <div class="list-row" data-nodrag="true" data-uuid="{{this.uuid}}">
                         <div class="row-content">
                             <div class="list-name">
-                                <a class="label" data-action="rollTest" data-type="skill">{{this.name}}</a>
+                              <img src="{{this.img}}">
+                              <a class="label" data-action="rollTest" data-type="skill">{{this.name}}</a>
                                 
                                 {{#if this.system.advances.indicator}}
                                     <a class="advancement-indicator" data-action="advanceSkill" data-tooltip="{{this.system.cost}} XP" data-target="skill">
@@ -92,7 +93,8 @@
                     <div class="list-row" data-nodrag="true" data-uuid="{{this.uuid}}">
                         <div class="row-content">
                             <div class="list-name">
-                                <a class="label" data-action="rollTest" data-type="skill">
+                              <img src="{{this.img}}">
+                              <a class="label" data-action="rollTest" data-type="skill">
                                     {{this.name}}
                                     {{#if this.system.advances.indicator}}
                                         <a class="advancement-indicator" data-action="advanceSkill" data-tooltip="{{this.system.cost}} XP" data-target="skill">
