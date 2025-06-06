@@ -66,7 +66,7 @@ export default function() {
 
     game.settings.register("wfrp4e", "homebrew", {
       name: "Hombrew Settings",
-      scope: "client",
+      scope: "world",
       config: false,
       type: HomebrewConfig.schema
     });
@@ -271,16 +271,6 @@ export default function() {
       scope: "world",
       config: true,
       default: true,
-      type: Boolean
-    });
-
-    // Register Manual Chat Cards
-    game.settings.register("wfrp4e", "manualChatCards", {
-      name: "SETTINGS.ManualChatCards",
-      hint: "SETTINGS.ManualChatCardsHint",
-      scope: "client",
-      config: true,
-      default: false,
       type: Boolean
     });
 
