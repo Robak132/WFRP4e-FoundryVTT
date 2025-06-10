@@ -10,7 +10,7 @@
         
         <div class="sl">
             <div class="sl-container">
-               {{test.result.SL}} 
+              <span class="{{#if test.isCritical}}critical{{/if}} {{#if test.isFumble}}fumble{{/if}}">{{test.result.SL}}</span>
             </div>
         </div>
 

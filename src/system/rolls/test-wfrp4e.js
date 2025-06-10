@@ -1304,19 +1304,11 @@ export default class TestWFRP extends WarhammerTestBase {
   }
 
   get isCritical() {
-    return this.result.critical
-  }
-
-  get isGreen() {
-    return this.result.color_green
-  }
-
-  get isRed() {
-    return this.result.color_red
+    return this.isCriticalFumble === "critical"
   }
 
   get isFumble() {
-    return this.result.fumble
+    return this.isCriticalFumble === "fumble"
   }
 
   get useMount() {

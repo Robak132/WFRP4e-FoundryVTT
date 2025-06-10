@@ -100,7 +100,12 @@
                 flex: 1;
                 text-align: left;
             }
-            
+            .critical {
+                color: green;
+            }
+            .fumble {
+                color: red;
+            }
         }
 
         .sl {
@@ -127,6 +132,12 @@
                 border: 1px solid black;
                 border-radius: 10px;
 
+                .critical {
+                    color: green;
+                }
+                .fumble {
+                    color: red;
+                }
 
             }
         }
