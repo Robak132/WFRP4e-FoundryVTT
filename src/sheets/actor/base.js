@@ -36,7 +36,8 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
       useAspect : this._onUseAspect,
       toggleQuality : this._onToggleQuality,
       groupActions : this._onToggleGroupActions,
-      useGroupAction : this._onUseGroupAction
+      useGroupAction : this._onUseGroupAction,
+      postItemProperty: this._postItemProperty
     },
     defaultTab : "main"
   }
@@ -292,7 +293,7 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
         try {
           let result  = table.results.find(r => r.getFlag("wfrp4e", "loc") == loc)
           if (result)
-          AP[loc].label = game.i18n.localize(result.text)
+          AP[loc].label = game.i18n.localize(result.description)
           else
           AP[loc].show = false;
         }
@@ -559,7 +560,7 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
     {
       enrichment.conditions[c] = await foundry.applications.ux.TextEditor.implementation.enrichHTML(game.wfrp4e.config.conditionDescriptions[c]);
     }
-    return expandObject(enrichment)
+    return foundry.utils.expandObject(enrichment)
   }
 
     /**
@@ -624,7 +625,7 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
       {
         if (action)
           {
-            let html = await TextEditor.enrichHTML(`
+            let html = await foundry.applications.ux.TextEditor.enrichHTML(`
             <p><strong>${action.name}</strong>: ${action.description}</p>
             <p>${action.effect}</p>
             `)
@@ -703,7 +704,7 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
           html = "No Actions Available"
         }
 
-        this._toggleDropdownAt(actions, await TextEditor.enrichHTML(html));
+        this._toggleDropdownAt(actions, await foundry.applications.ux.TextEditor.enrichHTML(html));
       }
     }
 
@@ -959,6 +960,11 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
           }, s.update);
       }));
   
+    }
+
+    static _postItemProperty(ev)
+    {
+      WFRP_Utility.postProperty(ev.target.text)
     }
 
     //#endregion

@@ -84,7 +84,6 @@ export default class ActorSheetWFRP4eCreature extends StandardWFRP4eActorSheet
         
         context.overviewButtons = this.actor.items.contents.reduce((buttons, item) => {
           let add = [];
-          console.log(buttons)
           if (item.included)
           {
             add = item.sheetButtons.filter(i => !buttons.find(b => i.label == b.label))
@@ -94,9 +93,8 @@ export default class ActorSheetWFRP4eCreature extends StandardWFRP4eActorSheet
       }
 
       static async _onOverviewDropdown(ev) {
-        let item = await this._getDocumentAsync(ev);
-        let description = item.system.description.value;
-  
-        this._toggleDropdown(ev, description, ".overview-content")
+        let document = await this._getDocumentAsync(ev);
+        let expandData = await document.system.expandData({secrets: this.actor.isOwner});
+        this._toggleDropdown(ev, expandData.description.value + `<div class="tags">${expandData.properties?.length ? "<div class='tag'>" + expandData.properties.join("</div><div class='tag'>") : ""}</div>`, ".overview-content");
       }
 }
