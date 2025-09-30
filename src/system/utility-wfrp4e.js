@@ -592,8 +592,9 @@ export default class WFRP_Utility {
           {
             modifier: modifier,
             showRoll: true,
+            returnResult: false,
             messageId
-          }, target.dataset.column));
+          }, target.dataset.column === "undefined" ? null : target.dataset.column));
       }
 
       chatOptions["content"] = html;
