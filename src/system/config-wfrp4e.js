@@ -345,7 +345,8 @@ WFRP4E.talentMax = {
     "dex": "CHARBonus.Dex",
     "int": "CHARBonus.Int",
     "wp": "CHARBonus.WP",
-    "fel": "CHARBonus.Fel"
+    "fel": "CHARBonus.Fel",
+    "custom": "ITEM.Custom"
 }
 
 
@@ -1134,7 +1135,8 @@ WFRP4E.premiumModules = {
     "wfrp4e-ua3" : "Ubersreik Adventures III",
     "wfrp4e-tribes" : "Tribes & Tribulations",
     "wfrp4e-owb3" : "Places & Perils",
-    "wfrp4e-dslf" : "Deft Steps Light Fingers"
+    "wfrp4e-dslf" : "Deft Steps Light Fingers",
+    "wfrp4e-dwarfs" : "Dwarf Bundle"
 }
 
 WFRP4E.copyrightText = `
@@ -1230,6 +1232,14 @@ WFRP4E.systemItems = {};
 WFRP4E.systemEffects = {}
 WFRP4E.vehicleSystemEffects = {}
 WFRP4E.groupAdvantageActions = [];
+
+WFRP4E.careerLevels = {
+    1 : 1,
+    2 : 2, 
+    3 : 3,
+    4 : 4,
+    5 : 5
+}
 
 WFRP4E.PrepareSystemItems = function() {
 
@@ -2750,6 +2760,7 @@ WFRP4E.scriptTriggers = {
     "preUpdate" : "Pre Update",
     "update" : "On Update",
     "equipToggle" : "Equip Toggle",
+    "targeted" : "Targeted",
     "prePrepareData" : "Pre-Prepare Data",
     "prePrepareItems" : "Pre-Prepare Actor Items",
     "prepareData" : "Prepare Data",

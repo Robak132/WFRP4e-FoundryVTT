@@ -253,14 +253,8 @@ export default class ActorWFRP4e extends WarhammerActor
       await test.roll();
     }
     else {
-      let skill = this.itemTags["skill"].find(i => i.name == item.test.value)
-      if (skill) {
-        let test = await this.setupSkill(skill, context, options);
-        await test.roll();
-      } 
-      else {
-        ui.notifications.error(`${game.i18n.format("ExtendedError2", { name: item.test.value })}`)
-      }
+      let test = await this.setupSkill(item.test.value, context, options);
+      await test.roll();
     }
   }
 
@@ -394,7 +388,7 @@ export default class ActorWFRP4e extends WarhammerActor
     }
     let extraMessages = [];
 
-    let weaponProperties = opposedTest.attackerTest.item?.properties || {}
+    let weaponProperties = foundry.utils.deepClone(opposedTest.attackerTest.item?.properties) || {}
     // If weapon is undamaging
     let undamaging = false;
     // If weapon has Hack
@@ -484,7 +478,7 @@ export default class ActorWFRP4e extends WarhammerActor
           zzapIgnored += layer.value;
           layer.ignored = true;
       }
-      else if (penetrating && layer.source?.type == "armour") // If penetrating - ignore 1 or all armor depending on material
+      else if (penetrating && layer.source?.system?.tags?.has("armour")) // If penetrating - ignore 1 or all armor depending on material
       {
         if (!game.settings.get("wfrp4e", "homebrew").mooPenetrating)
         {
