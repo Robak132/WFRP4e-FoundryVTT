@@ -229,7 +229,10 @@
 
         "HouseRules" : "House Rules",
         "HouseRulesLabel" : "Configure Homebrew",
-        "HouseRulesHint" : "Settings for common homebrew/house rules"
+        "HouseRulesHint" : "Settings for common homebrew/house rules",
+
+        "EditionManagerLabel" : "Edition Manager",
+        "EditionManagerHint" : "Configure Game Rules."
     },
 
     "MOO.Prone": "<br><br><b>Moo's House Rule</b>: You are considered one range band farther away when determining ranged attacks.",
@@ -458,6 +461,8 @@
     "Income" : "Income",
     "Wounds" : "Wounds",
     "RestRecover" : "Rest & Recover Wounds",
+    "RestRecoverHealed" : "<strong>{actor}</strong> healed {amount} Wounds.",
+    "Healing": "Healing",
     "Modifier" : "Modifier",
     "Modifiers" : "Modifiers",
     "Range" : "Range",
@@ -639,9 +644,11 @@
     "Owner" : "Owner",
 
     "BREAKDOWN.Base" : "Base",
+    "BREAKDOWN.Attack": "Attack",
     "BREAKDOWN.AttackerBase": "Attacker Base",
     "BREAKDOWN.Dice" : "Dice",
     "BREAKDOWN.OpposedSL" : "Opposed SL",
+    "BREAKDOWN.DefenderSL" : "Defender SL",
     "BREAKDOWN.Multiplier" : "Multiplier",
     "BREAKDOWN.Ignored" : "Ignored",
     "BREAKDOWN.Minimum1" : "Minimum 1 Wound",
@@ -804,6 +811,7 @@
     "DIALOG.SuccessBonusTT" : "SL that is only applied on success (e.g. Talents)",
     "DIALOG.BonusTT" : "List of potential bonuses",
     "DIALOG.RollMode" : "Roll Mode",
+    "DIALOG.Damage" : "Damage",
     "DIALOG.Extensions" : "Extensions",
     "DIALOG.CastSkill" : "Cast Skill",
     "DIALOG.HitLocation" : "Include a roll on the hit location table",
@@ -850,7 +858,16 @@
     "DIALOG.ItemDialog" : "Item Dialog",
     "DIALOG.ChoosePassenger" : "Choose Passenger",
     "DIALOG.ChooseArmour" : "Choose Armour to damage",
+    "DIALOG.Advantage" : "Advantage",
+    "DIALOG.Disadvantage" : "Disadvantage",
+    "DIALOG.Normal" : "Normal",
+    "DIALOG.SurplusAdvantageTT" : "Surplus Advantage",
+    "DIALOG.SurplusDisadvantageTT" : "Surplus Disadvantage",
+    "DIALOG.SL" : "SL",
+    "DIALOG.MultipleActiveTokens" : "This Actor has multiple tokens on the current Scene. Range calculation may not be using the token you are intending.",
 
+    "CHAT.Advantage" : "Advantage",
+    "CHAT.Disadvantage" : "Disadvantage",
     "CHAT.Quickcasting" : "Quick Casting",
     "CHAT.CareerChoose" : "Choose Your Career",
     "CHAT.DamageError" : "Error calculating damage:",
@@ -859,6 +876,7 @@
     "CHAT.DamageApplied" : "Damage Applied",
     "CHAT.ApplyDamageBasic" : "@DAMAGE damage applied to <b>{name}</b>",
     "CHAT.ApplyHack" : "Apply Hack",
+	"CHAT.ApplyHealing" : "Apply Healing",
     "CHAT.CriticalDeflection" : "Critical Deflection",
 	"CHAT.DamageToArmour" : "1 Damage applied to {item} ({type})",
     "CHAT.DamageShield" : "Shield",
@@ -904,6 +922,10 @@
     "CHAT.ChannelledSL" : "Channelled SL",
     "CHAT.VortexMove": "Random Vortex Movement",
     "CHAT.CausesFear" : "<b>{actor}</b> causes {fear} to {target}<br>",
+    "CHAT.CriticalDamageLabel" : "Critical Damage",
+    "CHAT.TotalPowerLabel" : "Total Power",
+    "CHAT.UnstoppableForceLabel" : "Unstoppable Force",
+    "CHAT.CriticalCasting" : "Critical Casting",
     "CHAT.Fear" : "Fear",
     "CHAT.FearReminder" : "These actors are currently subject to <b>Fear</b> and can perform a Test to overcome it.",
     "CHAT.InjuryFinish" : "{injury} duration complete.",
@@ -939,8 +961,8 @@
     "CHAT.DissolutionTitle" : "Dissolution of Body and Mind",
     "CHAT.Dissolution" : "As corruption ravages your soul, the warping breath of Chaos whispers within, either fanning your flesh into a fresh, new form, or fracturing your psyche with exquisite knowledge it can never unlearn.",
     "CHAT.CorruptionLoses" : "<b>{name}</b> loses {number} Corruption.",
+    "CHAT.DissolutionTable" : "Roll on the Dissolution of Body and Mind Table for your Species:<br>@Table[corruption]",
     "CHAT.CorruptionReroll" : "<b>{name}</b> rerolled corruption, with the new result their corruption changes by {number}.",
-    "CHAT.MutateTable" : "Roll on a Corruption Table:",
     "CHAT.MutateSuccess" : "You have managed to hold off your corruption. For now.",
     "CHAT.TestModifiers.WeaponLength" : "-10 Penalty to <b>{attacker}</b> for having the shorter weapon.",
     "CHAT.TestModifiers.FastWeapon" : "Penalty for defending against a Fast weapon.",
@@ -949,6 +971,7 @@
     "CHAT.TestModifiers.ShootingSizeModifier" : "Shooting at a {size} target.",
     "CHAT.TestModifiers.AttackerMountLarger" : "Bonus for attacking from a larger mount.",
     "CHAT.TestModifiers.DefenderMountLarger" : "Penalty for attacking the rider of a larger mount.",
+    "CHAT.TestModifiers.MovedThisRound" : "Shooting on a Round where you also use your Move",
     "CHAT.TestModifiers.SlowDefend" : "Attacker has Slow Weapon",
     "CHAT.TestModifiers.WrapDefend" : "Attacker has Wrap Weapon",
     "CHAT.TestModifiers.IgnoreDefenderMountLarger" : "Ignored penalty to attack rider because of weapon's reach (Up in Arms).",
@@ -989,7 +1012,7 @@
     "CHAT.CommandLine.Help.NameGeneration.Usage.Note" : "Generates a name in chat (Also accessible by clicking the <Name> label on a an NPC or creature sheet)",
     "CHAT.CommandLine.Help.AvailabilityTest.Title" : "Availability Test",
     "CHAT.CommandLine.Help.AvailabilityTest.Usage.Command" : "/avail",
-    "CHAT.CommandLine.Help.AvailabilityTest.Usage.Example" : "<br>/avail town common<br>/avail city exotic",
+    "CHAT.CommandLine.Help.AvailabilityTest.Usage.Example" : "<br>/avail common size=town<br>/avail rare size=city modifier=20",
     "CHAT.CommandLine.Help.AvailabilityTest.Usage.Note" : "rolls an availability test to determine the availability and the stock of an item.",
     "CHAT.CommandLine.Help.Pay.Title" : "Pay",
     "CHAT.CommandLine.Help.Pay.Usage.Command" : "/pay",
@@ -1013,6 +1036,9 @@
     "CHAT.CommandLine.Help.Travel.Usage.Note" : "Based off of the <a href='http://www.gitzmansgallery.com/docs/Travel%20Distances%20in%20the%20Empire.pdf'>Travel Distances in the Empire</a> PDF.",
     "CHAT.CommandLine.Help.Link" : "See the <a href={link}>Wiki</a> for more information on the features in this system",
     "Commands" : "Commands",
+    "CHAT.CastSpell" : "Cast {spell}",
+    "CHAT.Dispel" : "Dispel",
+    "CHAT.InvokePrayer" : "Invoke {prayer}",
 
     "ErrorSpeciesSkills" : "Could not add skills for species",
     "ErrorSpeciesTalents" : "Could not add talents for species",
@@ -1097,8 +1123,8 @@
     "MARKET.Town" : "Town",
     "MARKET.City" : "City",
     "MARKET.AvailabilityTest" : "Availability Test",
-    "MARKET.AvailWrongCommand": "Wrong parameters. Expected parameters: Rarity [Common,Scarce,Rare,Exotic]<br><br>Settlement size [Village,Town,City]<br>(opt.) Roll modifier",
-    "MARKET.AvailCommandExample": "Example: /avail Village Rare 10",
+    "MARKET.AvailWrongCommand": "Wrong parameters.",
+    "MARKET.AvailCommandExample": "Example:<br>/avail common size=town<br>/avail rare size=city modifier=20",
     "MARKET.SettlementSize" : "Settlement type:",
     "MARKET.Rarity" : "Rarity:",
     "MARKET.InStock": "In stock:",
@@ -1162,6 +1188,7 @@
     "WFRP4E.EncumbrancePenalties.MaxEnc" : "You're not moving.",
 
     "WFRP4E.ConditionName.Ablaze" : "Ablaze",
+    "WFRP4E.ConditionName.Besmirched" : "Besmirched",
     "WFRP4E.ConditionName.Bleeding" : "Bleeding",
     "WFRP4E.ConditionName.Blinded" : "Blinded",
     "WFRP4E.ConditionName.Broken" : "Broken",
@@ -1465,6 +1492,7 @@
     "NAME.Lingering" : "Lingering",
     "NAME.Amphibious" : "Amphibious",
     "NAME.Flight" : "Flight",
+    "NAME.Momentum" : "Momentum",
 
     "SPEC.Any": "Any",
     "SPEC.Basic" : "Basic",
@@ -1600,11 +1628,13 @@
     "PROPERTY.Impact": "Impact",
     "PROPERTY.Impale": "Impale",
     "PROPERTY.Penetrating": "Penetrating",
+    "PROPERTY.Parry": "Parry",
     "PROPERTY.Pistol": "Pistol",
     "PROPERTY.Precise": "Precise",
     "PROPERTY.Pummel": "Pummel",
     "PROPERTY.Repeater": "Repeater",
     "PROPERTY.Shield": "Shield",
+    "PROPERTY.Inflict": "Inflict",
     "PROPERTY.TrapBlade": "Trap Blade",
     "PROPERTY.Unbreakable": "Unbreakable",
     "PROPERTY.Wrap": "Wrap",
@@ -1686,6 +1716,8 @@
     "CHATOPT.Reroll": "Reroll",
     "CHATOPT.TotalPower": "Total Power",
     "CHATOPT.EditTest": "Edit Test",
+    "CHATOPT.Unreverse": "Unreverse",
+    "CHATOPT.Reverse": "Reverse",
 
     "TRAVEL.TravelMessageBase": "From <b>{from}</b> to <b>{to}</b> : ",
     "TRAVEL.TravelMessageRoad": "<br><b>Road</b> : {road_distance} miles<br>&nbsp;&nbsp;By Coach : {road_days} days, danger is {road_danger_string}<br>&nbsp;&nbsp;By Heavy Horse : {road_horse_heavy_days} days, danger is {road_danger_string}<br>&nbsp;&nbsp;By Fast Horse : {road_horse_fast_days} days, danger is {road_danger_string}<br>&nbsp;&nbsp;On Foot : {road_feet_days} days, danger is {road_danger_feet_string}",
@@ -1854,6 +1886,8 @@
     "EFFECT.BlackpowderShock" : "Blackpowder Shock",
     "EFFECT.CharacteristicsModifier" : "Characteristics (Modifier)",
     "EFFECT.CharacteristicsInitial" : "Characteristics (Initial)",
+    "EFFECT.CharacteristicsBonus" : "Characteristics (Bonus Modifier)",
+    "EFFECT.BonusModifier" : "Bonus Modifier",
     "EFFECT.CalculationBonusModifiers" : "Calculation Bonus Modifiers",
     "EFFECT.CalculationBonusModifier" : "CBM",
 
@@ -1938,6 +1972,8 @@
     "Stat Block Parser": "Stat Block Parser",
     "Possessions": "Possessions",
 
+    "Years": "years",
+    "Months": "months",
     "Days": "days",
     "Hours": "hours",
     "Minutes": "minutes",
@@ -2001,6 +2037,61 @@
     "Import or update the content from the WFRP4e Core Module": "Import or update the content from the WFRP4e Core Module",
 
 
+    "5e": {
+        "DIFFICULTY.VEasy": "Very Easy (+6 SL)",
+        "DIFFICULTY.Easy": "Easy (+4 SL)",
+        "DIFFICULTY.Average": "Average (+2 SL)",
+        "DIFFICULTY.Challenging": "Challenging (+0 SL)",
+        "DIFFICULTY.Difficult": "Difficult (-1 SL)",
+        "DIFFICULTY.Hard": "Hard (-2 SL)",
+        "DIFFICULTY.VHard": "Very Hard (-3 SL)",
+        "DIFFICULTY.Futile": "Futile (-4 SL)",
+        "DIFFICULTY.Impossible": "Impossible (-50)",
+
+        "MagicWind" : {
+            "Aqshy" : "Aqshy",
+            "Azyr" : "Azyr",
+            "Chamon" : "Chamon",
+            "Dhar" : "Dhar",
+            "Ghur" : "Ghur",
+            "Ghyran" : "Ghyran",
+            "Hysh" : "Hysh",
+            "Magick" : "Magick",
+            "Qhaysh" : "Qhaysh",
+            "Shyish" : "Shyish",
+            "Skaven" : "Skaven",
+            "Ulgu" : "Ulgu",
+            "Waaagh!" : "Waaagh!"
+        },
+
+        "Dialog" : {
+            "Modifier" : {
+                "CalledShot" : "Called Shot",
+                "UsingOffhand" : "Using offhand",
+                "Charging" : "Charging",
+                "Moved" : "Moved before shooting",
+                "Extreme" : "Extreme Range",
+                "Long" : "Long Range",
+                "Short" : "Short Range",
+                "PointBlank" : "Point Blank Range",
+                "Shorter" : "Defending against shorter weapon",
+                "TargetTiny" : "Target is Tiny",
+                "TargetMonstrous" : "Target is Monstrous",
+                "TargetSmaller" : "Target is smaller",
+                "TargetLarger" : "Target is larger"
+            }
+        },
+
+        "OvercastValue" : "Overcast Value",
+        "InitialValue" : "Initial Value",
+        "OvercastProperty" : "Property",
+
+
+        "SETTINGS.Use5e" : "Use 5th Edition Rules"
+
+    },
+
+
     "WH" : {
         "TransferType" : {
           "Crew" : "Crew"
@@ -2018,6 +2109,11 @@
                         "hitLocationTable.value" : {
                             "label" : "Hit Location Table",
                             "hint" : "Defines a custom hit location table for when this Actor is attacked."
+                        }
+                    },
+                    "status": {
+                        "momentum": {
+                            "label": "Momentum"
                         }
                     },
                     "settings": {

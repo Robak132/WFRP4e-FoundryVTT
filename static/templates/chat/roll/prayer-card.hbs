@@ -2,4 +2,8 @@
     {{> systems/wfrp4e/templates/chat/roll/test-card.hbs}}
     {{{test.prayer.description.value}}}
     {{> systems/wfrp4e/templates/partials/overcasts.hbs}}
+
+    {{#if test.succeeded}}
+        <a class='chat-button' data-action="useMagic">{{localize "CHAT.InvokePrayer" prayer=test.prayer.name}}</a>
+    {{/if}}
 </div>

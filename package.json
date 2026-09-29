@@ -26,12 +26,14 @@
     "fs": "^0.0.1-security",
     "fs-extra": "^10.1.0",
     "path": "^0.12.7",
-    "rollup": "^4.22.5",
+    "rollup": "^4.59.0",
     "rollup-plugin-baked-env": "^1.0.1",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-copy-watch": "^0.0.1",
     "rollup-plugin-postcss": "^4.0.2",
     "sass": "^1.85.1",
-    "scss": "^0.2.4"
+    "scss": "^0.2.4",
+    "simple-git": "^3.36.0",
+    "yargs": "^18.0.0"
   }
 }

@@ -136,6 +136,7 @@ export default class WFRP_Utility {
     {
       let skillData = skill.toObject();
       skillData.effects = [];
+      skillData.ownership = {default: 3}; // Make sure players can open the sheet
       return new Item.implementation(skillData);
     }
 
@@ -377,7 +378,7 @@ export default class WFRP_Utility {
    */
   static  async postProperty(propertyText) {
     let properties = foundry.utils.mergeObject(WFRP_Utility.qualityList(), WFRP_Utility.flawList()),
-      propertyDescr = Object.assign(duplicate(game.wfrp4e.config.qualityDescriptions), game.wfrp4e.config.flawDescriptions),
+      propertyDescr = Object.assign(foundry.utils.duplicate(game.wfrp4e.config.qualityDescriptions), game.wfrp4e.config.flawDescriptions),
       propertyKey;
 
     let property = this.parsePropertyName(propertyText.replace(/,/g, '').trim());
@@ -568,7 +569,7 @@ export default class WFRP_Utility {
    */
   static async handleTableClick(event, target) {
     let modifier = parseInt(target.dataset.modifier) || 0;
-    let messageId= this.id;
+    let messageId = target.closest("[data-message-id]")?.dataset.messageId;
     let html;
     let chatOptions = this.chatDataSetup("", game.settings.get("core", "rollMode"), true)
 
@@ -588,17 +589,19 @@ export default class WFRP_Utility {
       }
       else if (target.dataset.table) 
       {
+        let criticalLocation = game.messages.get(messageId)?.system?.test?.result.hitloc?.result;
         html = (await game.wfrp4e.tables.formatChatRoll(target.dataset.table,
           {
             modifier: modifier,
             showRoll: true,
             returnResult: false,
-            messageId
+            messageId,
+            criticalLocation
           }, target.dataset.column === "undefined" ? null : target.dataset.column));
       }
 
-      chatOptions["content"] = html;
-      chatOptions["type"] = 0;
+      chatOptions.content = html;
+      
       if (!foundry.utils.isEmpty(html))
       {
         ChatMessage.create(chatOptions);
@@ -826,7 +829,8 @@ export default class WFRP_Utility {
     let text
     try {
       // Extract text
-      text = Array.from(link.matchAll(/{(.+?)}/gm))[0][1]
+      text = Array.from(link.matchAll(/>\s*(.+?)\s*</gm))[0]?.[1] || link; // Extract inner html content
+      text = Array.from(text.matchAll(/{(.+?)}/gm))[0]?.[1] || text; // Extract link labels
       if (!text)
         text = link
     }
@@ -867,5 +871,18 @@ export default class WFRP_Utility {
         game.wfrp4e.config.speciesCareerReplacements[species] = replacements[species];
       }
     }
+  }
+
+  /**
+   * Convenience function primarily for effects to easily prompt for characteristics
+   */
+  static async characteristicDialog({number=1, effect, text, title, filter}={})
+  {
+    let characteristics = ItemDialog.objectToArray(game.wfrp4e.config.characteristics, effect?.img);
+    if (filter)
+    {
+      characteristics = characteristics.filter(c => filter.includes(c.id));
+    }
+    return await ItemDialog.create(characteristics, number, {text: text ?? "Choose Characteristic", title: title ?? effect?.name ?? "Characteristic"});
   }
 }

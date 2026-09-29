@@ -37,7 +37,9 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
       toggleQuality : this._onToggleQuality,
       groupActions : this._onToggleGroupActions,
       useGroupAction : this._onUseGroupAction,
-      postItemProperty: this._postItemProperty
+      postItemProperty: this._postItemProperty,
+      sellCargo : this._onSellCargo
+
     },
     defaultTab : "main"
   }
@@ -708,15 +710,20 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
       }
     }
 
-    static async _onRollTest(ev)
+    static async _onRollTest(ev, target)
     {
       let test;
       let document = await this._getDocumentAsync(ev);
       let options = {fields : {}};
-      let target = this._getParent(ev.target, "[data-action='rollTest']")
       if (target)
       {
         options.fields.modifier = Number(target.dataset.modifier) || 0;
+
+        // Don't want to set this to null because when these fields are merged in the dialog it will overwrite the initial field with nothing
+        if (target.dataset.range)
+        {
+          options.fields.range = target.dataset.range;
+        }
       }
       switch (target.dataset.type)
       {
@@ -741,6 +748,14 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
         case "prayer":
           test = await this.actor.setupPrayer(document, options);
           break;
+
+        case "cast":
+            test = await this.actor.setupCast(document, options);
+          break;
+
+        case "channelling":
+          test = await this.actor.setupChannelling(target.closest("[data-wind]").dataset.wind, options);
+        break;
       }
 
       test?.roll();
@@ -772,22 +787,6 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
                 label: game.i18n.localize("Channel"),
                 callback: async btn => {
                   return this.actor.setupChannell(spell, options);
-                  // TODO: move this elsewhere
-                  // await test.roll();
-                  // if (test.context.channelUntilSuccess) {
-                  //   await warhammer.utility.sleep(200);
-                  //   do {
-                  //     if (test.item.cn.SL >= test.item.cn.value) {
-                  //       break;
-                  //     }
-                  //     if (test.result.minormis || test.result.majormis || test.result.catastrophicmis) {
-                  //       break;
-                  //     }
-                  //     test.context.messageId = null; // Clear message so new message is made
-                  //     await test.roll();
-                  //     await warhammer.utility.sleep(200);
-                  //   } while (true);
-                  // }
                 }
               }
             ],
@@ -849,7 +848,7 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
       {
         let description = propertyDescriptions[key]?.replace("(Rating)", value) || `Description for ${ev.target.text} was not found`;
         
-        this._toggleDropdown(ev, description)
+        this._toggleDropdown(ev, await foundry.applications.ux.TextEditor.enrichHTML(description))
       }
     }
 
@@ -873,28 +872,28 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
           description = item.system.properties.specialAmmo;
           break;
         case "range":
-            if (!game.settings.get("wfrp4e", "homebrew").mooRangeBands)
-            {
+          if (game.wfrp5e) 
+          {
 
-              description =
-              `<a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Point Blank")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Point Blank")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Point Blank")}`].range[1]} ${game.i18n.localize("yds")}: ${game.wfrp4e.config.difficultyLabels[game.wfrp4e.config.rangeModifiers["Point Blank"]]}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Short Range")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Short Range")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Short Range")}`].range[1]} ${game.i18n.localize("yds")}: ${game.wfrp4e.config.difficultyLabels[game.wfrp4e.config.rangeModifiers["Short Range"]]}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Normal")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Normal")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Normal")}`].range[1]} ${game.i18n.localize("yds")}: ${game.wfrp4e.config.difficultyLabels[game.wfrp4e.config.rangeModifiers["Normal"]]}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Long Range")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Long Range")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Long Range")}`].range[1]} ${game.i18n.localize("yds")}: ${game.wfrp4e.config.difficultyLabels[game.wfrp4e.config.rangeModifiers["Long Range"]]}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Extreme")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Extreme")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Extreme")}`].range[1]} ${game.i18n.localize("yds")}: ${game.wfrp4e.config.difficultyLabels[game.wfrp4e.config.rangeModifiers["Extreme"]]}</a><br>
-                `
-                
+            description = Object.keys(item.system.range.bands).map(key => {
+                return `<a data-action="rollTest" data-type="weapon" data-range="${key}">${item.system.range.bands[key].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[key].range[1]} ${game.i18n.localize("yds")}: ${item.system.range.bands[key].modifier} SL</a>`
+            }).join("<br>");
+            
             }
             //@HOUSE
-            else {
+            else if (!game.settings.get("wfrp4e", "homebrew").mooRangeBands)
+            {
+              description = Object.keys(item.system.range.bands).map(key => {
+                  return `<a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[key].modifier}">${item.system.range.bands[key].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[key].range[1]} ${game.i18n.localize("yds")}: ${game.wfrp4e.config.difficultyLabels[game.wfrp4e.config.rangeModifiers[key]]}</a>`
+              }).join("<br>");
+            }
+            else 
+            {
               game.wfrp4e.utility.logHomebrew("mooRangeBands")
-              description =
-              `<a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Point Blank")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Point Blank")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Point Blank")}`].range[1]} ${game.i18n.localize("yds")}: ${item.system.range.bands[`${game.i18n.localize("Point Blank")}`].modifier}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Short Range")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Short Range")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Short Range")}`].range[1]} ${game.i18n.localize("yds")}: ${item.system.range.bands[`${game.i18n.localize("Short Range")}`].modifier}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Normal")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Normal")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Normal")}`].range[1]} ${game.i18n.localize("yds")}: ${item.system.range.bands[`${game.i18n.localize("Normal")}`].modifier}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Long Range")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Long Range")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Long Range")}`].range[1]} ${game.i18n.localize("yds")}: ${item.system.range.bands[`${game.i18n.localize("Long Range")}`].modifier}</a><br>
-                <a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[`${game.i18n.localize("Extreme")}`].modifier}">${item.system.range.bands[`${game.i18n.localize("Extreme")}`].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[`${game.i18n.localize("Extreme")}`].range[1]} ${game.i18n.localize("yds")}: ${item.system.range.bands[`${game.i18n.localize("Extreme")}`].modifier}</a><br>
-                `
+
+              description = Object.keys(item.system.range.bands).map(key => {
+                return `<a data-action="rollTest" data-type="weapon" data-modifier="${item.system.range.bands[key].modifier}">${item.system.range.bands[key].range[0]} ${game.i18n.localize("yds")} - ${item.system.range.bands[key].range[1]} ${game.i18n.localize("yds")}: ${item.system.range.bands[key].modifier}</a>`
+              }).join("<br>");
             }
           break;
       }
@@ -966,6 +965,16 @@ export default class BaseWFRP4eActorSheet extends WarhammerActorSheetV2
     {
       WFRP_Utility.postProperty(ev.target.text)
     }
+
+    
+  static _onSellCargo(ev)
+  {
+    let item = this._getDocument(ev)
+    if (item?.type == "cargo")
+    {
+      game.wfrp4e.trade.attemptSell(item);
+    }
+  }
 
     //#endregion
 }

@@ -19,7 +19,10 @@ export default class StandardWFRP4eActorSheet extends BaseWFRP4eActorSheet
       dismount : this._dismount,
       showMount : this._showMount,
       randomize: this._randomize,
+      advanceTalent : {buttons: [0, 2], handler : this._onAdvanceTalent},
       stepAilment: {buttons: [0, 2], handler: this._onStepAilment},
+      chooseLore: this._onChooseLore,
+      stepChannelling: {buttons: [0, 2], handler: this._onStepChannelling},
     },
   }
 
@@ -185,6 +188,25 @@ export default class StandardWFRP4eActorSheet extends BaseWFRP4eActorSheet
       return limited;
   }
 
+  _configureRenderParts(options) 
+  {
+    if (this.document?.limited)
+    {
+        return this._configureLimitedParts(options);
+    }
+    else if (game.wfrp5e)
+    {
+        const parts = foundry.utils.deepClone(this.constructor.PARTS);
+        parts.magic.template = "systems/wfrp4e/templates/sheets/actor/tabs/actor-magic5e.hbs";
+        return parts;
+    }
+    else 
+    {
+        return super._configureRenderParts(options);
+    }
+  }
+
+
 
   _addEventListeners()
   {    
@@ -273,30 +295,30 @@ export default class StandardWFRP4eActorSheet extends BaseWFRP4eActorSheet
 
   static _onUnarmedClick(ev) {
     ev.preventDefault();
-    let unarmed = game.wfrp4e.config.systemItems.unarmed
-    this.actor.setupWeapon(unarmed).then(setupData => {
-      this.actor.weaponTest(setupData)
-    })
+    let unarmed = game.wfrp4e.config.systemItems.unarmed;
+    this.actor.setupWeapon(unarmed).then(test => {
+      test.roll();
+    });
   }
   static _onDodgeClick(ev) {
-      this.actor.setupSkill(game.i18n.localize("NAME.Dodge"), {skipTargets: true}).then(test => {
-        test.roll();
-      });
+    this.actor.setupSkill(game.i18n.localize("NAME.Dodge"), {skipTargets: true}).then(test => {
+      test.roll();
+    });
   }
   static _onImprovisedClick(ev) {
     ev.preventDefault();
     let improv = game.wfrp4e.config.systemItems.improv;
-    this.actor.setupWeapon(improv).then(setupData => {
-      this.actor.weaponTest(setupData)
-    })
+    this.actor.setupWeapon(improv).then(test => {
+      test.roll();
+    });
   }
 
   static _onStompClick(ev) {
     ev.preventDefault();
     let stomp = game.wfrp4e.config.systemItems.stomp;
-    this.actor.setupTrait(stomp).then(setupData => {
-      this.actor.traitTest(setupData)
-    })
+    this.actor.setupTrait(stomp).then(test => {
+      test.roll();
+    });
   }
 
   static _dismount(ev) {
@@ -312,6 +334,13 @@ export default class StandardWFRP4eActorSheet extends BaseWFRP4eActorSheet
 
   static _onContextMenushowMount(ev) {
     this.actor.mount.sheet.render(true)
+  }
+
+  static async _onChooseLore(ev, target)
+  {
+    let item = await this._getDocumentAsync(ev, target);
+    item.update({"system.lore.chosen" : target.dataset.lore})
+
   }
 
   static _randomize(ev)
@@ -336,6 +365,33 @@ export default class StandardWFRP4eActorSheet extends BaseWFRP4eActorSheet
     }
   }
 
+  static async _onAdvanceTalent(ev) 
+  {
+
+    let talent = this._getDocument(ev);
+
+    if(!talent)
+    {
+      return;
+    }
+
+    if (ev.button == 0) {
+      Item.implementation.create(talent.toObject(), {parent: this.document});
+    }
+    else if (ev.button == 2) {
+      if (talent.Advances == 1)
+      {
+        talent.deleteDialog();
+      }
+      else 
+      {
+        talent.delete();
+      }
+    }
+
+
+}
+
   static async _onStepAilment(ev)
   {
     ev.stopPropagation();
@@ -350,5 +406,16 @@ export default class StandardWFRP4eActorSheet extends BaseWFRP4eActorSheet
       document.system.increment();
     }
   }
+
+  static async _onStepChannelling(ev, target)
+  {
+    let wind = target.closest("[data-wind]").dataset.wind;
+    if (ev.button === 0) {
+      this.actor.update(this.actor.system.status.channelling.set({value: 1, wind, add: true }));
+    } else {
+      this.actor.update(this.actor.system.status.channelling.set({value: -1, wind, add: true }));
+    }
+  }
+
 
 }

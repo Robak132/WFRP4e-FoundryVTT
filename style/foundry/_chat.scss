@@ -40,6 +40,7 @@
             @include foundry-button;
             line-height: 1.5rem;
             height: 1.5rem;
+            white-space: nowrap;
         }
 
         .opposed-options {
@@ -110,6 +111,11 @@
             }
         }
 
+        button[data-action=reverse]
+        {
+            width: 100%;
+        }
+
         .sl {
             margin-top: 0.5rem;
             // &:before {
@@ -144,7 +150,7 @@
             }
         }
 
-        .description {
+       .wfrp4e .description {
             margin: 0.5rem 0;
             text-align: center;
         }   
@@ -182,16 +188,25 @@
             }
         }
 
-        .overcast-options {
-            display: flex;
-            justify-content: space-around;
-            .overcast-section {
+        .overcasting {
+            text-align: center;
+            .overcast-count {
+                margin-bottom: 0px;
+            }
+
+            .overcast-options {
                 display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 0.5rem;
+                justify-content: space-around;
+                flex-wrap: wrap;
+                .overcast-section {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
             }
         }
+
 
 
         .pay-amount {
@@ -230,7 +245,67 @@
             align-items: center;
         }
 
-    }
+        .item-use {
+            .item-dropdown {
+                background: rgba(0, 0, 0, 0.1);
+                padding: 0.5rem;
+
+                .item-header {
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+
+                    img {
+                        height: 50px;
+                    }
+
+                    p {
+                        font-size: var(--font-size-18);
+                        font-weight: bold;
+                    }
+                }
+
+                .item-description {
+                    display: grid;
+                    grid-template-rows: 0fr;
+                    transition: grid-template-rows 250ms;
+
+                    >* {
+                        overflow: hidden
+                    }
+
+                    &.expanded {
+                        grid-template-rows: 1fr;
+                    }
+                }
+            }
+
+            .item-data {
+                display: flex;
+                flex-wrap: wrap;
+
+                >* {
+                    width: 50%;
+                    text-align: center;
+                }
+            }
+
+            .targets {
+                .target {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.2rem;
+                    margin: 0.5rem 0px;
+                    img {
+                        width: 2rem;
+                        height: 2rem;
+                    }
+                }
+            }
+
+        }
+        
 
 
     .vortex-table,
@@ -255,4 +330,5 @@
         .vortex-table .selected-position {
             background-color: skyblue;
           }
+    }
 }

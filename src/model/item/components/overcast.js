@@ -8,7 +8,16 @@ export class OvercastItemModel extends BaseItemModel {
   static defineSchema() 
   {
       let schema = super.defineSchema();
-      // Embedded Data Models?
+      
+      schema.overcastOptions = new fields.TypedObjectField(new fields.SchemaField({
+        label : new fields.StringField(),
+        property: new fields.StringField(),
+        cost: new fields.NumberField({initial: 2, min: 0}),
+        value: new fields.StringField(),
+        initial: new fields.StringField()
+      }))
+
+      // 4e / Legacy     
       schema.overcast = new fields.SchemaField({
           enabled : new fields.BooleanField(),
           label : new fields.StringField(),
@@ -59,22 +68,24 @@ export class OvercastItemModel extends BaseItemModel {
    * @param   {boolean} isMagicMissile  Whether or not it's a magic missile - used in calculating additional damage
    * @returns {String}  Processed formula
    */
-      computeSpellDamage(formula, isMagicMissile) {
+      computeSpellDamage(formula, {actor, isMagicMissile}) {
       try {
       if (formula) {
           formula = formula.toLowerCase();
 
+          actor = actor || this.parent.actor;
+
           if (isMagicMissile) {// If it's a magic missile, damage includes willpower bonus
-          formula += "+" + this.parent.actor.characteristics["wp"].bonus
+          formula += "+" + actor.system.characteristics["wp"].bonus
           }
 
           let labels = game.wfrp4e.config.characteristics;
-          let sortedCharacteristics = Object.entries(this.parent.actor.characteristics).sort((a,b) => -1 * labels[a[0]].localeCompare(labels[b[0]]));
+          let sortedCharacteristics = Object.entries(actor.system.characteristics).sort((a,b) => -1 * labels[a[0]].localeCompare(labels[b[0]]));
           sortedCharacteristics.forEach(arr => {
           let ch = arr[0];
           // Handle characteristic with bonus first
-          formula = formula.replace(game.wfrp4e.config.characteristicsBonus[ch].toLowerCase(), this.parent.actor.characteristics[ch].bonus);
-          formula = formula.replace(game.wfrp4e.config.characteristics[ch].toLowerCase(), this.parent.actor.characteristics[ch].value);
+          formula = formula.replace(game.wfrp4e.config.characteristicsBonus[ch].toLowerCase(), actor.system.characteristics[ch].bonus);
+          formula = formula.replace(game.wfrp4e.config.characteristics[ch].toLowerCase(), actor.system.characteristics[ch].value);
           });
 
           return (0, eval)(formula);
@@ -82,7 +93,7 @@ export class OvercastItemModel extends BaseItemModel {
       return 0;
       }
       catch (e) {
-        console.error(`Spell from ${this.parent?.actor?.name} threw error: ${e}.\n Arguments:`, this, formula);
+        console.error(`Spell from ${actor?.name} threw error: ${e}.\n Arguments:`, this, formula);
         if (ui.notifications) {
           throw ui.notifications.error(game.i18n.format("ERROR.ParseSpell"))
         }
@@ -90,9 +101,51 @@ export class OvercastItemModel extends BaseItemModel {
   }
 
 
+  static migrateData(data)
+  {
+
+      const _convertOvercast = (data) => {
+        if (data.type == "value")
+        {
+          return data.value
+        }
+        else if (data.type == "characteristic")
+        {
+          let path = `@actor.system.characteristics.${data.characteristic}`;
+          if (data.bonus)
+          {
+            path += ".bonus";
+          }
+          else 
+          {
+            path += ".value";
+          }
+          return path;
+        }
+        else if (data.type == "SL")
+        {
+          let path = `@test.result.SL`;
+          return path;
+        }
+      }
+
+      if (foundry.utils.isEmpty(data.overcastOptions) && data.overcast.enabled && game.wfrp5e)
+      {
+        data.overcastOptions[foundry.utils.randomID()] = {
+          label: data.overcast.label,
+          property: data.overcast.label.slugify(),
+          cost: 2,
+          value: _convertOvercast(data.overcast.valuePerOvercast),
+          initial: _convertOvercast(data.overcast.initial),
+        }
+      }
+      return data;
+  }
+
+
 
   // Don't really like this here as it uses assumed subclass data, but it'll do for now
-  computeOvercastingData() {
+  computeOvercastingData(actor) {
     let usage = {
       damage: undefined,
       range: undefined,
@@ -101,10 +154,10 @@ export class OvercastItemModel extends BaseItemModel {
       other: undefined,
     }
 
-    let damage = this.Damage
-    let target = this.Target?.toString()
-    let duration = this.Duration
-    let range = this.Range
+    let damage = parseInt(this.computeSpellDamage(this.damage.value, {actor, isMagicMissile: this.magicMissile?.value}) || 0)
+    let target = this.computeSpellPrayerFormula("target", {actor, aoe: this.target.aoe})?.toString();
+    let duration = this.computeSpellPrayerFormula("duration", {actor})
+    let range = this.computeSpellPrayerFormula("range", {actor})
 
     if (this.magicMissile?.value) {
       usage.damage = {
@@ -152,8 +205,8 @@ export class OvercastItemModel extends BaseItemModel {
       usage.range = {
         label: game.i18n.localize("Range"),
         count: 0,
-        initial: parseInt(range) || aoeValue,
-        current: parseInt(range) || aoeValue,
+        initial: parseInt(range) || range,
+        current: parseInt(range) || range,
         unit: range.split(" ")[1],
         available: false
       }
@@ -201,7 +254,7 @@ export class OvercastItemModel extends BaseItemModel {
       usage.other = other;
     }
 
-    this.overcast.usage = usage
+    return usage
 
     // Perhaps not the best implementation, but if a spell range (or other) says "maximum", don't allow overcasting
     function includesMaximum(string) {
@@ -222,24 +275,25 @@ export class OvercastItemModel extends BaseItemModel {
    * @param   {boolean} aoe       Whether or not it's calculating AoE (changes string return)
    * @returns {String}  formula   processed formula
    */
-  computeSpellPrayerFormula(type, aoe = false, formulaOverride) {
+  computeSpellPrayerFormula(type, {formulaOverride, actor, aoe=false}={}) {
     let formula = formulaOverride || this[type]?.value
     try {
       if (Number.isNumeric(formula))
         return formula
 
       formula = formula.toLowerCase();
+      actor = actor || this.parent.actor;
 
       // Do not process these special values
       if (formula != game.i18n.localize("You").toLowerCase() && formula != game.i18n.localize("Special").toLowerCase() && formula != game.i18n.localize("Instant").toLowerCase()) {
         // Iterate through characteristics
         let labels = game.wfrp4e.config.characteristics;
-        let sortedCharacteristics = Object.entries(this.parent.actor.characteristics).sort((a,b) => -1 * labels[a[0]].localeCompare(labels[b[0]]));
+        let sortedCharacteristics = Object.entries(actor.characteristics).sort((a,b) => -1 * labels[a[0]].localeCompare(labels[b[0]]));
         sortedCharacteristics.forEach(arr => {
           let ch = arr[0];
           // Handle characteristic with bonus first
-          formula = formula.replace(game.wfrp4e.config.characteristicsBonus[ch].toLowerCase(), this.parent.actor.characteristics[ch].bonus);
-          formula = formula.replace(game.wfrp4e.config.characteristics[ch].toLowerCase(), this.parent.actor.characteristics[ch].value);
+          formula = formula.replace(game.wfrp4e.config.characteristicsBonus[ch].toLowerCase(), actor.system.characteristics[ch].bonus);
+          formula = formula.replace(game.wfrp4e.config.characteristics[ch].toLowerCase(), actor.system.characteristics[ch].value);
         });
 
         let total = 0;

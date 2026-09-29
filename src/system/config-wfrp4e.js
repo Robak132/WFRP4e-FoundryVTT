@@ -539,11 +539,11 @@ WFRP4E.armorTypes = {
 
 // Range Test Modifiers
 WFRP4E.rangeModifiers = {
-    "Point Blank": "easy",
-    "Short Range": "average",
-    "Normal": "challenging",
-    "Long Range": "difficult",
-    "Extreme": "vhard",
+    pb: "easy",
+    short: "average",
+    normal: "challenging",
+    long: "difficult",
+    extreme: "vhard",
 }
 
 // Ranges
@@ -1109,6 +1109,7 @@ WFRP4E.transferTypes = {
 
 WFRP4E.premiumModules = {
     "wfrp4e" : "WFRP4e System",
+    "wfrp5e" : "5th Edition Rules",
     "wfrp4e-core" : "Core Rulebook",
     "wfrp4e-starter-set" : "Starter Set",
     "wfrp4e-rnhd" : "Rough Nights & Hard Days",
@@ -1136,7 +1137,8 @@ WFRP4E.premiumModules = {
     "wfrp4e-tribes" : "Tribes & Tribulations",
     "wfrp4e-owb3" : "Places & Perils",
     "wfrp4e-dslf" : "Deft Steps Light Fingers",
-    "wfrp4e-dwarfs" : "Dwarf Bundle"
+    "wfrp4e-dwarfs" : "Dwarf Bundle",
+    "wfrp4e-helf" : "High Elf Bundle"
 }
 
 WFRP4E.copyrightText = `
@@ -1407,33 +1409,31 @@ WFRP4E.PrepareSystemItems = function() {
             name: game.i18n.localize("NAME.Fear"),
             img: "systems/wfrp4e/icons/conditions/fear.png",
             statuses: ["fear"],
-            flags: {
-                wfrp4e: {
-                    transferData: {},
-                    scriptData: [
-                        {
-                            label: "@effect.flags.wfrp4e.dialogTitle",
-                            trigger: "dialog",
-                            script: `args.fields.slBonus -= 1`,
-                            options: {
-                                    hideScript: "",
-                                    activateScript: `return args.data.targets[0]?.name == this.item.flags.wfrp4e?.fearName`
-                            }
-                        },
-                        {
-                            label: "@effect.name",
-                            trigger: "immediate",
-                            script: `
-                            let name = this.item?.flags?.wfrp4e?.fearName
-                            this.effect.updateSource({"flags.wfrp4e.dialogTitle" : (name ? game.i18n.format("EFFECT.AffectTheSourceOfFearName", {name}) : game.i18n.format("EFFECT.AffectTheSourceOfFear"))})
-                            if (name)
-                            {
-                                this.item.updateSource({name : this.item.name + " (" + name + ")" })
-                            }
-                            `
+            system : {
+                transferData: {},
+                scriptData: [
+                    {
+                        label: "@effect.flags.wfrp4e.dialogTitle",
+                        trigger: "dialog",
+                        script: `args.fields.slBonus -= 1`,
+                        options: {
+                                hideScript: "",
+                                activateScript: `return args.data.targets[0]?.name == this.item.flags.wfrp4e?.fearName`
                         }
-                    ]
-                }
+                    },
+                    {
+                        label: "@effect.name",
+                        trigger: "immediate",
+                        script: `
+                        let name = this.item?.flags?.wfrp4e?.fearName
+                        this.effect.updateSource({"flags.wfrp4e.dialogTitle" : (name ? game.i18n.format("EFFECT.AffectTheSourceOfFearName", {name}) : game.i18n.format("EFFECT.AffectTheSourceOfFear"))})
+                        if (name)
+                        {
+                            this.item.updateSource({name : this.item.name + " (" + name + ")" })
+                        }
+                            `
+                    }
+                ]
             }
         },
         "enc1": {
@@ -2063,7 +2063,7 @@ WFRP4E.PrepareSystemItems = function() {
                             formula = scriptArgs.formula;
                             msg = scriptArgs.msg;
                             let roll = await new Roll(formula, this).roll({allowInteractive : false});
-                            let terms = roll.terms.map(i => (i instanceof Die ? (i.formula + " (" + i.total + ")") : (i.total))).join("")
+                            let terms = roll.terms.map(i => (i instanceof foundry.dice.terms.Die ? (i.formula + " (" + i.total + ")") : (i.total))).join("")
                             msg = msg.replace("@FORMULA", terms);
 
                             let damageMsg = ("<br>" + await this.actor.applyBasicDamage(roll.total, {loc: leastProtectedLoc, suppressMsg : true})).split("")
@@ -2373,6 +2373,11 @@ if (test.succeeded) {
                     value : null,
                     numbered: false
                 },
+            },
+            flags: {
+                core: {
+                    overlay: true
+                }
             }
         }
     ]
@@ -2727,9 +2732,7 @@ if (test.succeeded) {
 WFRP4E.effectTextStyle = CONFIG.canvasTextStyle.clone();
 WFRP4E.effectTextStyle.fontSize = "30";
 WFRP4E.effectTextStyle.fontFamily="CaslonAntique"
-
 WFRP4E.rollModes = CONFIG.Dice.rollModes;
-
 WFRP4E.transferDocumentTypes = defaultWarhammerConfig.transferDocumentTypes;
 
 WFRP4E.badgeInfo = defaultWarhammerConfig.badgeInfo;
@@ -2757,7 +2760,7 @@ WFRP4E.scriptTriggers = {
     "immediate" : "Immediate",
     "dialog" : "Dialog",
     "addItems" : "Add Items",
-    "preUpdate" : "Pre Update",
+    "preUpdateDocument" : "Pre-Update Document",
     "update" : "On Update",
     "equipToggle" : "Equip Toggle",
     "targeted" : "Targeted",
@@ -2788,6 +2791,10 @@ WFRP4E.scriptTriggers = {
     "preChannellingTest" : "Pre-Roll Channelling Test",
     "preRollPrayerTest" : "Pre-Roll Prayer Test",
     "preRollTraitTest" : "Pre-Roll Trait Test",
+    "computeCriticalFumble": "Compute Critical/Fumble (5e)",
+    "computeSL" : "Compute SL (5e)",
+    "computeHitLocation" : "Compute Hit Location (5e)",
+    "computeDamage": "Compute Damage (5e)",
     "rollTest" : "Roll Test",
     "rollIncomeTest" : "Roll Income Test",
     "rollWeaponTest" : "Roll Weapon Test",
@@ -2795,6 +2802,7 @@ WFRP4E.scriptTriggers = {
     "rollChannellingTest" : "Roll Channelling Test",
     "rollPrayerTest" : "Roll Prayer Test",
     "rollTraitTest" : "Roll Trait Test",
+    "castSpellPrayer" : "Cast Spell or Prayer",
     "preOpposedAttacker" : "Pre-Opposed Attacker",
     "preOpposedDefender" : "Pre-Opposed Defender",
     "opposedAttacker" : "Opposed Attacker",
@@ -2827,6 +2835,11 @@ WFRP4E.syncTriggers = [
     "prepareItem",
     "getInitiativeFormula"
 ];
+
+WFRP4E.areaDurations = {
+    "instantaneous" : "WH.TransferData.AreaDurationInstantaneous",
+    "sustained" : "WH.TransferData.AreaDurationSustained"
+};
 
 WFRP4E.triggerMapping = {
     "update" : "updateDocument",

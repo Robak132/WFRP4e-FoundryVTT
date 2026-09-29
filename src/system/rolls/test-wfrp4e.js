@@ -585,7 +585,6 @@ export default class TestWFRP extends WarhammerTestBase {
 
     if (this.options.rest) {
       this.result.woundsHealed = Math.max(Math.trunc(this.result.SL) + this.options.tb, 0);
-      this.result.other.push(`${this.result.woundsHealed} ${game.i18n.localize("Wounds Healed")}`)
     }
   }
 
@@ -788,12 +787,11 @@ export default class TestWFRP extends WarhammerTestBase {
     if (this.failed) 
     {
       let wpb = this.actor.system.characteristics.wp.bonus;
-      let tableText = game.i18n.localize("CHAT.MutateTable") + "<br>" + game.wfrp4e.config.corruptionTables.map(t => `@Table[${t}]<br>`).join("")
       ChatMessage.create(WFRP_Utility.chatDataSetup(`
       <h3>${game.i18n.localize("CHAT.DissolutionTitle")}</h3> 
       <p>${game.i18n.localize("CHAT.Dissolution")}</p>
       <p>${game.i18n.format("CHAT.CorruptionLoses", { name: this.actor.name, number: wpb })}
-      <p>${tableText}</p>`,
+      <p>${game.i18n.localize("CHAT.DissolutionTable")}</p>`,
         "gmroll", false))  
       this.actor.update({ "system.status.corruption.value": Number(this.actor.system.status.corruption.value) - wpb }, {skipCorruption: true}) // Don't keep checking corruption, causes a possible loop of dialogs
     }
@@ -883,8 +881,8 @@ export default class TestWFRP extends WarhammerTestBase {
   async rollDices() {
     if (isNaN(this.preData.roll)) {
       let roll = await new Roll("1d100").roll();
-      await this._showDiceSoNice(roll, this.context.chatOptions.rollMode || "roll", this.context.speaker);
       this.result.roll = roll.total;
+      this.result.rollObject = roll;
     }
     else
       this.result.roll = this.preData.roll;
@@ -914,8 +912,8 @@ export default class TestWFRP extends WarhammerTestBase {
 
     this.result.breakdown.formatted = this.formatBreakdown()
 
-    if (game.modules.get("dice-so-nice") && game.modules.get("dice-so-nice").active && messageData.sound?.includes("dice"))
-      messageData.sound = undefined;
+    if (this.result.rollObject)
+      messageData.rolls = [this.result.rollObject];
 
     let templateData = {
       test: this,
@@ -937,12 +935,12 @@ export default class TestWFRP extends WarhammerTestBase {
       if (messageData.sound)
         warhammer.utility.log(`Playing Sound: ${messageData.sound}`)
 
+      this.context.messageId = foundry.utils.randomID();
       messageData.system = {testData : this.data};
       messageData.type = "test";
-      let message = await ChatMessage.create(messageData)
+      messageData._id = this.context.messageId;
 
-      this.context.messageId = message.id
-      await this.updateMessageData()
+      let message = await ChatMessage.create(messageData, {keepId : true, chatBubble: false})
     }
     else // Update message 
     {
@@ -985,50 +983,6 @@ export default class TestWFRP extends WarhammerTestBase {
 
 
 
-  /**
-   * Add support for the Dice So Nice module
-   * @param {Object} roll 
-   * @param {String} rollMode 
-   */
-  async _showDiceSoNice(roll, rollMode, speaker) {
-    if (game.modules.get("dice-so-nice") && game.modules.get("dice-so-nice").active) {
-
-      if (game.settings.get("dice-so-nice", "hideNpcRolls")) {
-        let actorType = null;
-        if (speaker.actor)
-          actorType = game.actors.get(speaker.actor).type;
-        else if (speaker.token && speaker.scene)
-          actorType = game.scenes.get(speaker.scene).tokens.get(speaker.token).actor.type;
-        if (actorType != "character")
-          return;
-      }
-
-      let whisper = null;
-      let blind = false;
-      let sync = true;
-      switch (rollMode) {
-        case "blindroll": //GM only
-          blind = true;
-        case "gmroll": //GM + rolling player
-          let gmList = game.users.filter(user => user.isGM);
-          let gmIDList = [];
-          gmList.forEach(gm => gmIDList.push(gm.id));
-          whisper = gmIDList;
-          break;
-        case "selfroll":
-          sync = false;
-          break;
-        case "roll": //everybody
-          let userList = game.users.filter(user => user.active);
-          let userIDList = [];
-          userList.forEach(user => userIDList.push(user.id));
-          whisper = userIDList;
-          break;
-      }
-      await game.dice3d.showForRoll(roll, game.user, sync, whisper, blind);
-    }
-  }
-
   // @@@@@@@ Overcast functions placed in root class because it is used by both spells and prayers @@@@@@@
   async _overcast(choice) {
     let overcastData = this.result.overcast
@@ -1053,7 +1007,7 @@ export default class TestWFRP extends WarhammerTestBase {
         if (overcastData.valuePerOvercast.type == "value")
           overcastData.usage[choice].current += overcastData.valuePerOvercast.value
         else if (overcastData.valuePerOvercast.type == "SL")
-          overcastData.usage[choice].current += (parseInt(this.result.SL) + (parseInt(this.item.system.computeSpellPrayerFormula(undefined, false, overcastData.valuePerOvercast.additional)) || 0))
+          overcastData.usage[choice].current += (parseInt(this.result.SL) + (parseInt(this.item.system.computeSpellPrayerFormula(undefined, {aoe: false, formulaOverride: overcastData.valuePerOvercast.additional})) || 0))
         else if (overcastData.valuePerOvercast.type == "characteristic")
           overcastData.usage[choice].current += (overcastData.usage[choice].increment || 0) // Increment is specialized storage for characteristic data so we don't have to look it up
         break
@@ -1403,9 +1357,11 @@ export default class TestWFRP extends WarhammerTestBase {
   get token() { return WFRP_Utility.getToken(this.context.speaker) }
 
   get item() {
-    if (typeof this.data.preData.item == "string")
+    if (typeof this.data.preData.item == "string" && this.actor.items.get(this.data.preData.item))
       return this.actor.items.get(this.data.preData.item)
-    else
+    else if (this.data.preData.itemData)
+      return new CONFIG.Item.documentClass(this.data.preData.itemData, { parent: this.actor })
+    else if (typeof this.data.preData.item == "object")
       return new CONFIG.Item.documentClass(this.data.preData.item, { parent: this.actor })
   }
 
